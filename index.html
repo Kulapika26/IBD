@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>犬貓腸道疾病比較分析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* 淡灰色背景 */
+        }
+        .active-button {
+            background-color: #1e40af; /* 深藍色 */
+            color: white;
+            font-weight: 600;
+        }
+        .inactive-button {
+            background-color: #3b82f6; /* 基礎藍色 */
+            color: white;
+        }
+        .inactive-button:hover {
+            background-color: #2563eb; /* 懸停時稍深的藍色 */
+        }
+        .content-card {
+            background-color: white;
+            border-radius: 0.75rem; /* 更圓的邊角 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* 更柔和的陰影 */
+            transition: all 0.3s ease-in-out;
+        }
+        .content-card h2 { /* Section Title */
+            color: #1e3a8a; /* 深藍色標題 */
+            font-size: 1.75rem; 
+        }
+        .content-card h3 { /* Subsection Title */
+            color: #1d4ed8; /* 稍淺的藍色副標題 */
+            font-size: 1.35rem; 
+        }
+        .content-card p {
+            color: #374151; 
+            line-height: 1.75; 
+        }
+        .lang-en {
+            margin-bottom: 0.75rem; 
+        }
+        .lang-zh {
+            margin-bottom: 1.5rem; 
+        }
+        .content-card table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .content-card th, .content-card td {
+            border: 1px solid #e5e7eb; 
+            padding: 0.75rem;
+            text-align: left;
+        }
+        .content-card th {
+            background-color: #f3f4f6; 
+            font-weight: 600;
+        }
+        .cited-works-list {
+            list-style-type: decimal;
+            padding-left: 2rem;
+        }
+        .cited-works-list li {
+            margin-bottom: 0.75rem;
+        }
+
+        .citation-link {
+            color: #1e40af; /* Dark blue for citation links */
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 1rem;
+        }
+        .modal-container {
+            background-color: white;
+            padding: 1.5rem; /* p-6 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); /* shadow-xl */
+            width: 100%;
+            max-width: 36rem; /* max-w-xl */
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-close-button {
+            position: absolute;
+            top: 0.75rem; /* p-3 */
+            right: 0.75rem; /* p-3 */
+            background: none;
+            border: none;
+            font-size: 1.5rem; /* text-2xl */
+            line-height: 1;
+            color: #6b7280; /* gray-500 */
+            cursor: pointer;
+        }
+        .modal-close-button:hover {
+            color: #1f2937; /* gray-800 */
+        }
+        .modal-content {
+            font-size: 0.875rem; /* text-sm */
+            color: #374151; /* gray-700 */
+            line-height: 1.6;
+        }
+         .modal-content a {
+            color: #2563eb; /* blue-600 */
+        }
+        .modal-content a:hover {
+            text-decoration: underline;
+        }
+
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-8 px-4">
+
+    <header class="w-full max-w-5xl mb-8 text-center">
+        <h1 id="mainTitle" class="text-3xl md:text-4xl font-bold text-gray-800 leading-tight"></h1>
+    </header>
+
+    <nav class="w-full max-w-4xl mb-8">
+        <div id="navigationButtons" class="flex flex-wrap justify-center gap-3 sm:gap-4">
+            </div>
+    </nav>
+
+    <main id="contentArea" class="w-full max-w-4xl p-6 md:p-8 content-card">
+        <div class="text-center text-gray-500">請點擊上方按鈕選擇章節閱讀。<br>Please click a button above to select a section to read.</div>
+    </main>
+
+    <div id="referenceModalOverlay" class="modal-overlay hidden">
+        <div class="modal-container">
+            <button id="referenceModalCloseButton" class="modal-close-button" aria-label="關閉參考文獻">&times;</button>
+            <div id="referenceModalContent" class="modal-content">
+                </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Global store for references
+        const referencesData = {};
+        const superscriptMap = { '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9' };
+
+        function mapSuperscriptToNormal(superScriptStr) {
+            return superScriptStr.split('').map(char => superscriptMap[char] || '').join('');
+        }
+
+        function processCitationsInText(text) {
+            // Handle superscript citations
+            text = text.replace(/([a-zA-Z0-9\)\}\]]?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)([\.\,\;\s<]|$)/g, (match, p1, p2, p3) => {
+                const normalNum = mapSuperscriptToNormal(p2);
+                if (!normalNum) return match;
+                return `${p1}<a href='javascript:void(0);' class='citation-link' data-ref-id='${normalNum}'>${p2}</a>${p3}`;
+            });
+            text = text.replace(/(?<![a-zA-Z0-9\)\}\]])([⁰¹²³⁴⁵⁶⁷⁸⁹]+)(?![\w])/g, (match, p1) => {
+                 const normalNum = mapSuperscriptToNormal(p1);
+                 if (!normalNum) return match;
+                 return `<a href='javascript:void(0);' class='citation-link' data-ref-id='${normalNum}'>${p1}</a>`;
+            });
+
+            // Handle bracketed citations
+            text = text.replace(/(\s*)\[(\d+)\](\s*[\.\,\;]?)/g, (match, p1, p2, p3) => {
+                const num = p2;
+                return `${p1}<a href='javascript:void(0);' class='citation-link' data-ref-id='${num}'>[${num}]</a>${p3}`;
+            });
+            return text;
+        }
+
+        let documentContent = { 
+            title: "Inflammatory Bowel Disease and Small Cell Gastrointestinal Lymphoma in Dogs and Cats: Diagnostic Insights and Comparative Analysis with Human Crohn's Disease<br>炎性腸病與犬貓胃腸道小細胞淋巴瘤：診斷見解及與人類克隆氏症之比較分析",
+            sections: [
+                {
+                    id: "section1",
+                    buttonText: "Section 1 / 第1節<br><span class='text-xs'>Intro to Chronic Enteropathies / 犬貓慢性腸病簡介</span>",
+                    title: "Section 1: Introduction to Chronic Enteropathies: Inflammatory Bowel Disease and Small Cell Gastrointestinal Lymphoma in Canines and Felines<br>第1節:犬貓慢性腸病簡介:炎性腸病與胃腸道小細胞淋巴瘤",
+                    subsections: [
+                        {
+                            title: "1.1. Overview of Chronic Enteropathies / 慢性腸病概述",
+                            content: `
+                                <p class='lang-en'>Chronic enteropathies (CE) in canine and feline patients are broadly defined as gastrointestinal (GI) diseases characterized by clinical signs, such as vomiting, diarrhea, weight loss, or appetite changes, that persist for three weeks or longer. A critical aspect of this definition is the exclusion of other readily identifiable causes, including parasitic infestations, specific bacterial or viral infections, non-lymphomatous gastrointestinal neoplasia, and systemic diseases originating outside the Gl tract that may manifest with similar signs. Within this spectrum of chronic digestive disorders, Inflammatory Bowel Disease (IBD) stands out as a predominant cause of chronic vomiting and diarrhea in both dogs and cats. IBD is characterized by persistent or recurrent Gl signs coupled with histopathologic confirmation of inflammation within the mucosal lining of the gastrointestinal tract.³</p>
+                                <p class='lang-zh'>慢性腸病(CE)在犬貓患者中廣泛定義為持續三週或更長時間的胃腸道(GI)疾病，其臨床症狀包括嘔吐、腹瀉、體重減輕或食慾改變。此定義的一個關鍵方面是排除了其他易於識別的病因，包括寄生蟲感染、特定細菌或病毒感染、非淋巴瘤性胃腸道腫瘤，以及可能表現出類似症狀的源於胃腸道外的全身性疾病。在這些慢性消化系統疾病中，炎性腸病(IBD)是犬貓慢性嘔吐和腹瀉的主要原因。IBD的特徵是持續性或復發性胃腸道症狀，並伴有胃腸道黏膜層炎症的組織病理學確認。</p>
+                                
+                                <p class='lang-en'>Small cell lymphoma (SCL), particularly its alimentary (gastrointestinal) manifestation, represents another critical chronic enteropathy that warrants significant consideration. This neoplastic condition is diagnosed with notable frequency in cats and often presents with a clinical picture that closely mimics that of IBD, posing a substantial diagnostic challenge. The broader category of feline chronic enteropathy is diverse, encompassing several distinct entities: food-responsive enteropathy (FRE), where clinical signs resolve with dietary modification; antibiotic-responsive enteropathy (ARE), which improves with antibiotic administration; immunosuppressant-responsive enteropathy (IRE), a category that often includes what is clinically diagnosed as IBD; and alimentary small cell lymphoma itself. This classification underscores the necessity of a structured and often sequential diagnostic approach, frequently involving therapeutic trials to differentiate these conditions. The term "chronic enteropathy" thus serves as an important foundational concept, highlighting that IBD and SCL are part of a spectrum of chronic Gl conditions that require systematic investigation to reach a definitive diagnosis. Initial diagnostic findings may point towards a CE, with further, more specific investigations needed to pinpoint IBD, SCL, or other specific forms like FRE or ARE.</p>
+                                <p class='lang-zh'>小細胞淋巴瘤(SCL)，特別是其消化道(胃腸道)表現形式，是另一種值得重點關注的嚴重慢性腸病。這種腫瘤性疾病在貓中診斷頻率較高，且其臨床表現常與IBD極為相似，因而構成重大的診斷挑戰。貓慢性腸病的範疇廣泛，包含數種不同實體：食物反應性腸病(FRE)，其臨床症狀可透過飲食調整而緩解；抗生素反應性腸病(ARE)，經抗生素治療後病情改善；免疫抑制劑反應性腸病(IRE)，此類別通常包括臨床上診斷為IBD的病例；以及消化道小細胞淋巴瘤本身。此分類凸顯了結構化且常為序貫性診斷方法的必要性，通常涉及治療性試驗以區分這些病症。「慢性腸病」一詞因此成為一個重要的基礎概念，強調 IBD 和 SCL 是一系列慢性胃腸道疾病的一部分，需要系統性檢查才能達成明確診斷。初步診斷結果可能指向慢性腸病，但仍需進一步的特定檢查才能確定為IBD、SCL或其他特定類型如FRE 或ARE。</p>
+                            `
+                        },
+                        {
+                            title: "1.2. The Diagnostic Challenge / 診斷上的挑戰",
+                            content: `
+                                <p class='lang-en'>A significant and persistent challenge in veterinary gastroenterology is the considerable overlap in clinical manifestations between IBD and SCL. Common signs such as chronic or intermittent vomiting, diarrhea (which can vary in character depending on the affected intestinal segment), weight loss, and alterations in appetite (ranging from hyporexia to anorexia, or even polyphagia in some cases) are frequently observed in both conditions. This similarity makes a reliable differentiation based solely on the clinical presentation exceptionally difficult, if not impossible.³</p>
+                                <p class='lang-zh'>在獸醫胃腸病學中，一個顯著且持續存在的挑戰是IBD 與SCL 之間臨床表現的高度重疊。常見症狀如慢性或間歇性嘔吐、腹瀉(其特性因受影響腸段而異)、體重減輕以及食慾改變(從食慾減退到厭食，甚至在某些情況下出現多食)在兩種疾病中均常見。這種相似性使得僅憑臨床表現進行可靠的區分極為困難，甚至不可能。</p>
+                                
+                                <p class='lang-en'>IBD, by its very nature, is a diagnosis of exclusion. This principle mandates a thorough and systematic diagnostic workup to meticulously rule out other potential causes of chronic gastrointestinal inflammation before a diagnosis of IBD can be confidently established. These differential diagnoses include parasitic infections, specific enteropathogenic bacterial or viral infections, adverse food reactions (food allergy or intolerance), exocrine pancreatic insufficiency (especially in dogs), and certain non-Gl systemic diseases that can manifest with Gl signs. The diagnostic challenge is a central theme in understanding these conditions; each diagnostic modality's contribution to differentiating IBD from SCL, or its inability to do so, must be carefully considered, underscoring why multimodal and often advanced diagnostic approaches are indispensable.</p>
+                                <p class='lang-zh'>IBD 本質上是一種排除性診斷。此原則要求進行全面且系統性的診斷檢查，以仔細排除慢性胃腸道炎症的其他潛在原因，然後才能確診IBD。這些鑑別診斷包括寄生蟲感染、特定的腸道致病菌或病毒感染、食物不良反應(食物過敏或不耐受)、外分泌胰腺功能不全(尤其在犬隻)，以及某些可能伴隨胃腸道症狀的非胃腸道全身性疾病。診斷上的挑戰是理解這些疾病的核心主題；必須仔細評估每種診斷方法在區分 IBD 與SCL方面的貢獻及其不足之處，這也突顯了為何多模式且通常是進階的診斷方法不可或缺。</p>
+                                
+                                <p class='lang-en'>The differentiation between severe, highly inflammatory forms of IBD and well-differentiated (low-grade or small cell) lymphoma presents a particular diagnostic conundrum, most notably in feline patients. Even with the aid of initial imaging modalities like ultrasonography and preliminary histopathological findings from endoscopic biopsies, distinguishing these two entities can remain problematic. The subtle cytological and architectural changes in early or low-grade SCL can closely mimic those seen in severe chronic inflammation, often necessitating more invasive procedures like full-thickness surgical biopsies and the application of advanced diagnostic techniques such as immunohistochemistry (IHC) and Polymerase Chain Reaction for Antigen Receptor Rearrangements (PARR) to achieve a definitive diagnosis. Furthermore, the hypothesis that chronic inflammation in IBD might, in some cases, particularly in cats, predispose to or progress to SCL adds another layer of complexity. This potential IBD-to-lymphoma continuum not only complicates the diagnostic process but also carries significant implications for long-term monitoring and prognosis.¹⁹</p>
+                                <p class='lang-zh'>區分嚴重、高度炎性形式的IBD與分化良好(低度惡性或小細胞)的淋巴瘤尤其構成診斷上的難題，這在貓科動物患者中尤為顯著。即使藉助如超音波等初步影像學檢查以及內視鏡活檢的初步組織病理學結果，區分這兩種實體仍可能存在問題。早期或低度惡性 SCL 的細微細胞學和結構變化可能與嚴重慢性炎症中所見的變化極為相似，因此常需更具侵入性的程序，如全層手術活檢，以及應用如免疫組織化學(IHC)和抗原受體重組聚合酶鏈式反應(PARR)等進階診斷技術，才能達成明確診斷。此外，IBD中的慢性炎症在某些情況下(尤其是在貓)，可能易感或進展為SCL的假說，更增添了另一層複雜性。這種潛在的IBD至淋巴瘤的連續過程不僅使診斷過程複雜化，也對長期監測和預後具有重要意義¹⁹。</p>
+                            `
+                        },
+                        {
+                            title: "1.3. Scope and Purpose of the Report / 本報告的範圍與目的",
+                            content: `
+                                <p class='lang-en'>This report aims to provide a comprehensive, current, and expert-level overview of the spectrum of diagnostic findings associated with Inflammatory Bowel Disease (IBD) and small cell gastrointestinal lymphoma (SCL) in dogs and cats. It will delve into the clinical presentations, hematological and biochemical alterations, and the utility of various diagnostic modalities including specialized laboratory tests, imaging techniques (radiography, ultrasonography, and computed tomography), cytology, and histopathology, with a focus on differentiating features and diagnostic challenges.</p>
+                                <p class='lang-zh'>本報告旨在針對犬貓的炎性腸病(IBD)及胃腸道小細胞淋巴瘤(SCL)，提供全面、最新且專家級的診斷發現綜覽。內容將深入探討臨床表現、血液學與生化學變化，以及各種診斷模式的應用價值，包括專門實驗室檢測、影像學技術(放射線攝影、超音波檢查及電腦斷層掃描)、細胞學及組織病理學，並著重於鑑別特徵與診斷上的挑戰。</p>
+                                
+                                <p class='lang-en'>A significant component of this report will be a comparative analysis exploring the associations and distinctions between these common veterinary gastrointestinal conditions and human Crohn's Disease. This comparison will touch upon aspects of etiopathogenesis, clinical features, diagnostic approaches, and the potential for animal diseases to serve as spontaneous models for human conditions.</p>
+                                <p class='lang-zh'>本報告的一個重要組成部分將是比較分析，探討這些常見的獸醫胃腸道疾病與人類克隆氏症之間的關聯與區別。此比較將涉及病因病理、臨床特徵、診斷方法等方面，以及動物疾病作為人類疾病自發性模型的潜力。</p>
+                                
+                                <p class='lang-en'>The information will be presented first in English, followed by a direct, paragraph-by-paragraph translation into Traditional Chinese. This dual-language format is intended to enhance accessibility for a broader audience of veterinary professionals and researchers.</p>
+                                <p class='lang-zh'>資訊將首先以英文呈現，隨後逐段直接翻譯成繁體中文。此雙語格式旨在為更廣泛的獸醫專業人士和研究人員提供便利。</p>
+                            `
+                        }
+                    ]
+                },
+                {
+                    id: "section2",
+                    buttonText: "Section 2 / 第2節<br><span class='text-xs'>IBD in Dogs and Cats / 犬貓炎性腸病(IBD)</span>",
+                    title: "Section 2: Inflammatory Bowel Disease (IBD) in Dogs and Cats<br>第2節:犬貓炎性腸病(IBD)",
+                    subsections: [
+                        {
+                            title: "2.1. Etiopathogenesis and Pathophysiology / 病因病理與病理生理學",
+                            content: `
+                                <p class='lang-en'>Inflammatory Bowel Disease (IBD) in dogs and cats encompasses a group of idiopathic, chronic, and often relapsing inflammatory disorders that affect various segments of the gastrointestinal (GI) tract. The underlying mechanism is widely recognized as immunologically mediated, involving a complex and dysregulated host immune response. While the precise initiating causes of IBD remain incompletely understood, its development is considered multifactorial, arising from an intricate interplay between genetic susceptibility of the host, the host's mucosal immune system, various environmental factors (including diet), and, critically, the diverse microbial communities residing within the gut (the gut microbiota).³</p>
+                                <p class='lang-zh'>犬貓炎性腸病(IBD) 包含一組影響胃腸道(GI)不同區段的特發性、慢性且常復發的炎性疾病。其潜在機制廣泛認為是免疫介導的，涉及複雜且失調的宿主免疫反應。雖然IBD的確切起始原因尚未完全明瞭，但其發展被認為是多因素的，源於宿主的遺傳易感性、宿主黏膜免疫系統、各種環境因素(包括飲食)以及至關重要的腸道內多樣微生物群落(腸道菌群)之間錯綜複雜的相互作用。</p>
+                                
+                                <p class='lang-en'>Genetic predisposition is acknowledged, implying that certain breeds or individuals may possess genetic variations that make them more susceptible to developing the dysregulated immune responses characteristic of IBD. However, specific gene associations in canine and feline IBD are less clearly defined compared to human IBD. A central tenet in IBD pathogenesis is a breakdown of immunologic tolerance within the Gl mucosa. This leads to an abnormal or exaggerated immune response directed against components of the commensal (normal) gut microbiota or dietary antigens.³ This immune dysregulation involves the activation of various immune cell populations, notably B and T lymphocytes, and the subsequent production of a cascade of pro-inflammatory mediators, including cytokines (e.g., TNF-a, interleukins), chemokines, prostanoids, and leukotrienes, which perpetuate the inflammatory process.¹²</p>
+                                <p class='lang-zh'>遺傳易感性已被確認，這意味著某些品種或個體可能具有使其更容易發生IBD特有的免疫反應失調的遺傳變異。然而，與人類IBD相比，犬貓IBD中的特定基因關聯尚不夠明確。IBD 發病機制的一個核心觀點是胃腸道黏膜內免疫耐受的破壞。這導致針對共生(正常)腸道菌群成分或膳食抗原的異常或過度免疫反應。這種免疫失調涉及多種免疫細胞群的活化，特別是B和T淋巴細胞，以及隨後產生的促炎介質級聯反應，包括細胞因子(例如TNF-a、介白素)、趨化因子、前列腺素和白三烯，這些介質使炎症過程持續存在¹²。</p>
+                                
+                                <p class='lang-en'>The integrity of the intestinal mucosal barrier is paramount for maintaining gut homeostasis. This barrier, formed by a layer of mucus produced by goblet cells, tightly packed epithelial cells interconnected by tight junctions, and secreted antimicrobial peptides, normally limits the exposure of the underlying immune system to the vast array of luminal antigens and microbes. Any defect or compromise in this barrier function, whether due to genetic factors, microbial influences, or direct epithelial injury, can lead to increased intestinal permeability ("leaky gut"). This allows for greater translocation of bacteria, bacterial products (like lipopolysaccharide), or dietary antigens across the epithelium, triggering and sustaining chronic inflammation. Dysbiosis, an imbalance in the composition and/or function of the gut microbiota, is increasingly recognized as a key player. Alterations in microbial diversity, the overgrowth of certain pro-inflammatory bacterial species, or a reduction in beneficial, anti-inflammatory species can profoundly impact mucosal immune responses and barrier function, contributing significantly to IBD pathogenesis. The pathophysiology of IBD ultimately leads to clinical signs through mechanisms such as malabsorption of nutrients, excessive fluid and electrolyte secretion (hypersecretion), and potentially abnormal gastrointestinal motility patterns, all stemming from the chronic inflammatory insult to the intestinal lining.²³</p>
+                                <p class='lang-zh'>腸道黏膜屏障的完整性對於維持腸道恆定至關重要。此屏障由杯狀細胞產生的黏液層、由緊密連接相互連接的緊密排列的上皮細胞以及分泌的抗菌肽組成，正常情況下限制了下層免疫系統暴露於大量管腔抗原和微生物。此屏障功能的任何缺陷或損害，無論是由於遺傳因素、微生物影響或直接上皮損傷，都可能導致腸道通透性增加(「腸漏症」)。這使得細菌、細菌產物(如脂多醣)或膳食抗原更容易跨上皮轉運，從而觸發並維持慢性炎症。菌群失調，即腸道菌群組成和/或功能失衡，日益被認為是關鍵因素。微生物多樣性的改變、某些促炎細菌種類的過度生長，或有益的抗炎種類的減少，都可能深刻影響黏膜免疫反應和屏障功能，從而顯著促進IBD的發病機制。IBD的病理生理學最終透過營養吸收不良、過度液體和電解質分泌(過度分泌)以及潛在的胃腸道蠕動模式異常等機制導致臨床症狀，所有這些都源於腸道內壁的慢性炎症損傷²³。</p>
+                            `
+                        },
+                        {
+                            title: "2.2. Clinical Manifestations / 臨床表現",
+                            content: `
+                                <p class='lang-en'>The clinical presentation of IBD in dogs and cats is characterized by persistent gastrointestinal signs, typically lasting for more than three weeks, which is a key criterion for classifying an enteropathy as chronic. The specific signs exhibited often depend on the primary region of the Gl tract affected by inflammation, as well as the severity and chronicity of the disease.³</p>
+                                <p class='lang-zh'>犬貓炎性腸病(IBD)的臨床表現特徵為持續性胃腸道症狀，通常持續超過三週，這是將腸病歸類為慢性的關鍵標準。所表現出的具體症狀通常取決於受炎症影響的主要胃腸道區域，以及疾病的嚴重程度和慢性程度。</p>
+                                
+                                <p class='lang-en'>Commonly observed clinical signs include chronic vomiting, which may be more prominent if the stomach (gastritis) or proximal small intestine (duodenitis, jejunitis) is primarily involved. Diarrhea is another frequent complaint. Small intestinal diarrhea often manifests as large volumes of watery or soft stool, potentially with melena (digested blood, appearing as dark, tarry feces) if there is significant upper Gl bleeding. In contrast, large intestinal diarrhea (colitis) is typically characterized by small volumes of stool passed with increased frequency, often accompanied by mucus, hematochezia (fresh, red blood in feces), and tenesmus (straining to defecate).³</p>
+                                <p class='lang-zh'>常見的臨床症狀包括慢性嘔吐，如果胃部(胃炎)或近端小腸(十二指腸炎、空腸炎)主要受累，嘔吐可能更為顯著。腹瀉是另一個常見的主訴。小腸性腹瀉通常表現為大量水樣或軟便，如果存在明顯的上消化道出血，則可能伴有黑糞(消化後的血液，呈深色柏油樣糞便)。相比之下，大腸性腹瀉(結腸炎)的典型特徵是糞便量少但排便頻率增加，常伴有黏液、便血(糞便中帶有新鮮紅血)和裡急後重(排便困難)³。</p>
+                                
+                                <p class='lang-en'>Weight loss is a significant finding in many animals with IBD, resulting from malabsorption of nutrients, decreased appetite, or increased metabolic demands due to chronic inflammation. Appetite changes can vary, ranging from hyporexia (decreased appetite) or anorexia (complete loss of appetite) to, paradoxically, polyphagia (increased appetite) in some individuals, particularly if malabsorption is severe and the animal attempts to compensate for nutrient loss. In cats, a peculiar sign that may be associated with IBD is the vomiting of hairballs more than once a month, suggesting an impaired ability to pass hair through the Gl tract.¹³</p>
+                                <p class='lang-zh'>體重減輕是許多IBD 動物的重要發現，這是由於營養吸收不良、食慾下降或慢性炎症導致代謝需求增加所致。食慾變化各異，可從食慾減退(食慾下降)或厭食(完全喪失食慾)到某些個體出現矛盾的多食(食慾增加)，尤其是在吸收不良嚴重且動物試圖彌補營養損失的情況下。在貓隻中，一個可能與IBD 相關的特殊症狀是每月嘔吐毛球超過一次，這表明其通過胃腸道排出毛髮的能力受損¹³。</p>
+                                
+                                <p class='lang-en'>In severe cases of IBD, particularly those complicated by protein-losing enteropathy (PLE), more profound systemic signs can develop. PLE occurs when there is excessive loss of protein from the bloodstream into the intestinal lumen due to severe mucosal damage. This leads to hypoalbuminemia (low serum albumin), which can manifest as subcutaneous edema (fluid accumulation under the skin), pleural effusion (fluid in the chest cavity), and ascites (fluid in the abdominal cavity). These signs indicate a more advanced and severe disease state, often associated with a poorer prognosis.</p>
+                                <p class='lang-zh'>在嚴重的IBD 病例中，尤其是併發蛋白質流失性腸病(PLE)的病例，可能會出現更顯著的全身性症狀。當由於嚴重的黏膜損傷導致過多蛋白質從血流失到腸腔時，就會發生PLE。這會導致低白蛋白血症(血清白蛋白低下)，臨床上可表現為皮下水腫(皮膚下積液)、胸腔積液(胸腔內積液)和腹水(腹腔內積液)。這些症狀表明疾病狀態更為晚期和嚴重，通常與較差的預後相關。</p>
+                            `
+                        },
+                        {
+                            title: "2.3. Diagnostic Workup and Key Findings / 診斷檢查與主要發現",
+                            content: `
+                                <p class='lang-en'>The diagnosis of IBD is fundamentally one of exclusion, necessitating a comprehensive and systematic approach to rule out other diseases that can mimic its clinical signs. This process involves a combination of history, physical examination, laboratory testing, diagnostic imaging, and ultimately, intestinal biopsy for histopathological confirmation. The diagnostic hierarchy typically involves first excluding non-Gl and specific Gl diseases (like infections or EPI), then ruling out food-responsive and antibiotic-responsive enteropathies through therapeutic trials, before confirming immunosuppressant-responsive IBD via histopathology. This structured approach is critical due to the non-specific nature of presenting signs and the limitations of individual diagnostic tests.</p>
+                                <p class='lang-zh'>IBD 的診斷基本上是一種排除性診斷，需要全面且系統的方法來排除其他可能模仿其臨床症狀的疾病。此過程包括病史、理學檢查、實驗室檢測、診斷影像學、最終還需進行腸道活檢以進行組織病理學確認。診斷層級通常首先排除非胃腸道和特定的胃腸道疾病(如感染或EPI)，然後通過治療試驗排除食物反應性和抗生素反應性腸病，最後通過組織病理學確認免疫抑制劑反應性IBD。由於臨床症狀的非特異性以及個別診斷測試的局限性，這種結構化方法至關重要。</p>
+                            `
+                        },
+                        {
+                            title: "2.3.1. Hematological and Biochemical Profiles / 血液學與生化學分析",
+                            content: `
+                                <p class='lang-en'>Routine blood work, including a complete blood count (CBC) and serum biochemistry panel, is a foundational part of the diagnostic workup for any animal with chronic Gl signs. While often within normal limits in milder cases of IBD, certain abnormalities can provide supportive evidence or indicate severity.²⁵</p>
+                                <p class='lang-zh'>常規血液檢查，包括全血細胞計數(CBC)和血清生化分析，是任何患有慢性胃腸道症狀動物診斷程序的基礎部分。雖然在較輕微的IBD病例中，這些檢查結果通常在正常範圍內，但某些異常可以提供支持性證據或指示疾病的嚴重程度²⁵。</p>
+                                
+                                <p class='lang-en'>On the CBC, findings are frequently unremarkable. However, occasional abnormalities may include a mild, non-regenerative anemia, consistent with chronic inflammation or subtle gastrointestinal blood loss. Inflammatory leukograms, such as neutrophilia (an increased neutrophil count), may be present, reflecting systemic inflammation. Eosinophilia (an increased eosinophil count) can be a notable finding, particularly in cases of eosinophilic IBD, one of the specific inflammatory patterns. Lymphopenia (a decreased lymphocyte count) may also be observed, potentially due to stress, chronic inflammation, or loss of lymphocytes into the gut.²⁴</p>
+                                <p class='lang-zh'>在CBC方面，結果往往不顯著。然而，偶爾可能出現的異常包括輕微的非再生性貧血，這與慢性炎症或隱匿性胃腸道失血一致。炎症性白血球像，如嗜中性球增多(嗜中性球計數增加)，可能存在，反映全身性炎症。嗜酸性球增多(嗜酸性球計數增加)可能是一個顯著的發現，尤其是在嗜酸性 IBD 病例中，這是特定的炎症模式之一。也可能觀察到淋巴細胞減少(淋巴細胞計數減少)，這可能是由於壓力、慢性炎症或淋巴細胞流失到腸道所致²⁴。</p>
+                                
+                                <p class='lang-en'>The serum biochemistry panel is also often normal in uncomplicated IBD. However, in severe IBD, particularly when complicated by protein-losing enteropathy (PLE), significant changes occur. Panhypoproteinemia, characterized by concurrent hypoalbuminemia (low serum albumin) and hypoglobulinemia (low serum globulin), is a hallmark of PLE and indicates substantial protein loss through the damaged intestinal mucosa. Hypocholesterolemia (low serum cholesterol) frequently accompanies panhypoproteinemia in PLE cases. Elevations in liver enzymes, such as alanine aminotransferase (ALT) and aspartate aminotransferase (AST), may be noted and can suggest a concurrent reactive hepatopathy secondary to the intestinal inflammation or absorption of inflammatory mediators from the gut.²⁷ Increased blood urea nitrogen (BUN) and creatinine levels can occur secondary to dehydration from fluid losses (vomiting, diarrhea) or, in severe cases, may reflect pre-renal azotemia or even renal involvement if the disease process is extensive or complicated.²⁷ It is important to recognize that normal CBC and chemistry results do not rule out IBD, underscoring the need for further diagnostics when clinical suspicion is high.</p>
+                                <p class='lang-zh'>血清生化分析在單純的IBD 病例中也通常正常。然而，在嚴重的IBD，特別是併發蛋白質流失性腸病(PLE)時，會出現顯著變化。全低蛋白血症，其特徵為同時出現低白蛋白血症(血清白蛋白低下)和低球蛋白血症(血清球蛋白低下)，是PLE的標誌，表明通過受損腸黏膜大量蛋白質流失。在PLE病例中，低膽固醇血症(血清膽固醇低下)常伴隨全低蛋白血症出現。肝酶升高，如丙胺酸轉胺酶(ALT)和天門冬胺酸轉胺酶(AST)，也可能被注意到，這可能提示繼發於腸道炎症或從腸道吸收炎症介質的反應性肝病²⁷。血液尿素氮(BUN)和肌酸酐水平升高可能是由於液體流失(嘔吐、腹瀉)導致的脫水，或者在嚴重情況下，如果疾病過程廣泛或複雜，則可能反映腎前性氮血症甚至腎臟受累²⁷。重要的是要認識到，正常的CBC 和生化結果並不能排除IBD，這強調了在臨床高度懷疑時需要進一步診斷。</p>
+                                
+                                <p class='lang-en'>A urinalysis is typically performed to rule out renal disease as a cause of Gl signs (e.g., uremic gastropathy), to assess hydration status via urine specific gravity, and to check for proteinuria, which can sometimes be associated with chronic inflammatory conditions or PLE.²²</p>
+                                <p class='lang-zh'>尿液分析通常用於排除腎臟疾病作為胃腸道症狀的原因(例如，尿毒症性胃病)，通過尿比重評估水合狀態，並檢查蛋白尿，蛋白尿有時可能與慢性炎症性疾病或PLE 相關²²。</p>
+                            `
+                        },
+                        {
+                            title: "2.3.2. Cobalamin (Vitamin B12) and Folate Assessment / 鈷胺素(維生素B12)和葉酸評估",
+                            content: `
+                                <p class='lang-en'>Serum cobalamin (vitamin B12) and folate concentrations are valuable, relatively non-invasive indicators of small intestinal function and health. These B vitamins are absorbed in specific segments of the small intestine: cobalamin is primarily absorbed in the distal small intestine (ileum), requiring intrinsic factor (produced by the pancreas in dogs and cats, and also the stomach in cats), while folate is absorbed exclusively in the proximal small intestine (duodenum and jejunum).²⁵ Their serum levels can therefore provide localizing information about the site of intestinal disease and may also reflect alterations in the gut microbiota (dysbiosis).</p>
+                                <p class='lang-zh'>血清鈷胺素(維生素B12) 和葉酸濃度是評估小腸功能和健康的寶貴且相對非侵入性的指標。這些B群維生素在小腸的特定區段吸收：鈷胺素主要在遠端小腸(迴腸)吸收，需要內在因子(犬貓由胰腺產生，貓亦由胃產生)，而葉酸則專門在近端小腸(十二指腸和空腸)吸收²⁵。因此，它們的血清水平可以提供關於腸道疾病部位的定位資訊，也可能反映腸道菌群的改變(菌群失調)。</p>
+                                
+                                <p class='lang-en'>In animals with IBD, several patterns of cobalamin and folate derangement can be observed:</p>
+                                <p class='lang-zh'>在患有IBD 的動物中，可以觀察到幾種鈷胺素和葉酸失調的模式：</p>
+                                <ul class='list-disc pl-5 lang-en'>
+                                    <li>Hypocobalaminemia (low serum cobalamin): This is a common finding, particularly if the ileum is significantly affected by inflammation, leading to malabsorption. It can also occur with exocrine pancreatic insufficiency (EPI) due to lack of intrinsic factor, or with severe small intestinal bacterial overgrowth (dysbiosis) where bacteria consume cobalamin.¹⁰ Subnormal serum cobalamin concentrations are considered indicative of chronic malabsorption and warrant supplementation.²⁸</li>
+                                    <li>Hypofolatemia (low serum folate): This suggests disease or malabsorption affecting the proximal small intestine (duodenum/jejunum).¹⁰</li>
+                                    <li>Hyperfolatemia (high serum folate): This is often consistent with bacterial overgrowth in the upper small intestine, as certain bacteria can synthesize folate, which is then absorbed.</li>
+                                    <li>Combined Hypocobalaminemia and Hypofolatemia: This pattern suggests more diffuse or severe small intestinal disease affecting both proximal and distal absorption sites.²⁵</li>
+                                </ul>
+                                <ul class='list-disc pl-5 lang-zh'>
+                                    <li>低鈷胺素血症(血清鈷胺素低下)：這是一個常見的發現，尤其是在迴腸受炎症嚴重影響導致吸收不良的情況下。由於缺乏內在因子，也可能發生於外分泌胰腺功能不全(EPI)，或者在嚴重的小腸細菌過度生長(菌群失調)中，細菌消耗了鈷胺素¹⁰。低於正常的血清鈷胺素濃度被認為是慢性吸收不良的指標，需要補充²⁸。</li>
+                                    <li>低葉酸血症(血清葉酸低下)：這表明疾病或吸收不良影響近端小腸(十二指腸/空腸)¹⁰。</li>
+                                    <li>高葉酸血症(血清葉酸過高)：這通常與上消化道細菌過度生長一致，因為某些細菌可以合成葉酸，然後被吸收。</li>
+                                    <li>合併低鈷胺素血症和低葉酸血症：這種模式表明存在更瀰漫性或更嚴重的小腸疾病，影響近端和遠端吸收部位²⁵。</li>
+                                </ul>
+                                
+                                <p class='lang-en'>It is crucial to note that dietary deficiency of cobalamin and folate is highly improbable in dogs and cats, even with prolonged starvation.²⁸ Therefore, subnormal levels almost invariably point to a malabsorptive state. However, not all animals with intestinal disease will have abnormal cobalamin or folate levels, as the disease may not be severe enough or long-standing enough to deplete body stores or significantly impair absorption.²⁸ Thus, normal levels do not rule out IBD, but abnormal levels provide strong evidence of Gl dysfunction. Reference intervals are species-specific (Table 2).²⁸</p>
+                                <p class='lang-zh'>必須注意的是，犬貓即使長期飢餓，飲食中鈷胺素和葉酸缺乏的可能性也極低²⁸。因此，低於正常的水平幾乎總是表明存在吸收不良狀態。然而，並非所有患有腸道疾病的動物都會出現鈷胺素或葉酸水平異常，因為疾病可能不夠嚴重或持續時間不夠長，不足以耗盡身體儲備或顯著損害吸收²⁸。因此，正常水平並不能排除IBD，但異常水平則為胃腸功能障礙提供了有力證據。參考區間具有物種特異性(表2)²⁸。</p>
+                                
+                                <p class='lang-en'>Table 2: Reference Intervals for Serum Cobalamin and Folate</p>
+                                <p class='lang-zh'>表2：血清鈷胺素與葉酸參考區間</p>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Analyte / 分析物</th>
+                                            <th>Canine Species Range / 犬種範圍</th>
+                                            <th>Feline Species Range / 貓種範圍</th>
+                                            <th>Units / 單位</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Cobalamin / 鈷胺素</td>
+                                            <td>251-908</td>
+                                            <td>290-1,500</td>
+                                            <td>ng/L</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Folate / 葉酸</td>
+                                            <td>7.7-24.4</td>
+                                            <td>9.7-21.6</td>
+                                            <td>µg/L</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p class='lang-en'>Source: ²⁸</p>
+                                <p class='lang-zh'>資料來源：²⁸</p>
+                            `
+                        },
+                        {
+                            title: "2.3.3. Fecal Analysis and Other Laboratory Tests / 糞便分析與其他實驗室檢測",
+                            content: `
+                                <p class='lang-en'>A thorough fecal examination is essential in the initial workup of any animal with chronic Gl signs to rule out endoparasitic infections, which can mimic IBD. This typically includes fecal flotation to detect ova of nematodes (like hookworms, whipworms) and cysts of protozoa (like Giardia), and a direct saline smear to look for motile trophozoites (e.g., Giardia, Tritrichomonas foetus in cats). Specific antigen tests for Giardia are also commonly employed for increased sensitivity. Empirical deworming with a broad-spectrum anthelmintic (e.g., fenbendazole) is often recommended even with negative fecal tests, as parasite detection can be intermittent.</p>
+                                <p class='lang-zh'>對於任何出現慢性胃腸道症狀的動物，徹底的糞便檢查是初步檢查中不可或缺的一環，旨在排除可能模仿IBD的內寄生蟲感染。這通常包括糞便漂浮法以檢測線蟲(如鉤蟲、鞭蟲)的蟲卵和原蟲(如梨形鞭毛蟲)的包囊，以及直接生理鹽水塗片以尋找活動的滋養體(例如，貓的梨形鞭毛蟲、胎兒毛滴蟲)。梨形鞭毛蟲的特異性抗原檢測也常用於提高靈敏度。即使糞便檢查結果為陰性，通常也建議使用廣效驅蟲藥(例如芬苯達唑)進行經驗性驅蟲，因為寄生蟲的檢出可能具有間歇性。</p>
+                                
+                                <p class='lang-en'>Fecal cultures for specific bacterial enteropathogens (e.g., Salmonella spp., Campylobacter spp., pathogenic E. coli) may be considered if there is a high index of suspicion (e.g., raw food diet, acute onset of hemorrhagic diarrhea, zoonotic risk), but their role in diagnosing chronic IBD is generally limited, as these infections are more often associated with acute enteritis.¹⁵ Fecal PCR panels are available for detecting a wider range of enteropathogens, including some that are difficult to culture.²⁵</p>
+                                <p class='lang-zh'>如果高度懷疑(例如，生食餵養、急性出血性腹瀉發作、人畜共通傳染病風險)，可以考慮進行特定細菌性腸道病原體(例如，沙門氏菌屬、彎曲桿菌屬、致病性大腸桿菌)的糞便培養，但其在診斷慢性 IBD 中的作用通常有限，因為這些感染更常與急性腸炎相關¹⁵。糞便 PCR套組可用於檢測更廣泛的腸道病原體，包括一些難以培養的病原體²⁵。</p>
+                                
+                                <p class='lang-en'>Measurement of fecal alpha1-proteinase inhibitor (A1PI) can be a useful non-invasive test to confirm intestinal protein loss in cases of suspected PLE, as A1PI is a protein of similar size to albumin that is not significantly degraded in the intestine.²⁶</p>
+                                <p class='lang-zh'>糞便α1-蛋白酶抑制劑(A1PI)的測定是一種有用的非侵入性檢測方法，可用於確認疑似PLE病例中的腸道蛋白質流失，因為A1PI是一種大小與白蛋白相似的蛋白質，在腸道中不會顯著降解²⁶。</p>
+
+                                <p class='lang-en'>Tests to rule out exocrine pancreatic insufficiency (EPI), such as serum trypsin-like immunoreactivity (TLI), are crucial, particularly in dogs presenting with signs of malabsorption like weight loss and diarrhea, as EPI can closely mimic IBD.¹⁴ Similarly, assessment for pancreatitis using pancreatic lipase immunoreactivity (PLI, or species-specific assays like canine Spec cPL or feline Spec fPL) is important, as pancreatitis can cause chronic Gl signs or occur concurrently with IBD.</p>
+                                <p class='lang-zh'>排除外分泌胰腺功能不全(EPI)的檢測，如血清類胰蛋白酶免疫反應性(TLI)，至關重要，尤其是在出現吸收不良症狀(如體重減輕和腹瀉)的犬隻中，因為EPI的臨床表現與IBD 非常相似¹⁴。同樣地，使用胰脂肪酶免疫反應性(PLI，或物種特異性檢測如犬 Spec cPL 或貓Spec fPL) 評估胰腺炎也很重要，因為胰腺炎可引起慢性胃腸道症狀或與IBD 同時發生。</p>
+
+                                <p class='lang-en'>Endocrine disorders such as hypoadrenocorticism (Addison's disease) in dogs and hyperthyroidism in cats can also present with chronic Gl signs. Therefore, an ACTH stimulation test to rule out hypoadrenocorticism and measurement of total T4 in older cats are often included in the diagnostic workup for chronic enteropathies.</p>
+                                <p class='lang-zh'>犬隻的腎上腺皮質功能低下症(愛迪生氏病)和貓隻的甲狀腺功能亢進症等內分泌疾病也可能表現為慢性胃腸道症狀。因此，用於排除腎上腺皮質功能低下症的ACTH 刺激試驗以及老年貓的總 T4 測定通常包含在慢性腸病的診斷檢查中。</p>
+                            `
+                        },
+                        {
+                            title: "2.3.4. Diagnostic Imaging / 診斷影像學",
+                            content: `
+                                <p class='lang-en'>Diagnostic imaging plays a crucial role in the workup of IBD, primarily to assess the structure of the Gl tract and associated organs, to help rule out other causes of chronic Gl signs, and to guide further diagnostic procedures like biopsy.</p>
+                                <p class='lang-zh'>診斷影像學在IBD的檢查中扮演著至關重要的角色，主要用於評估胃腸道及相關器官的結構，協助排除慢性胃腸道症狀的其他原因，並指導如活組織檢查等進一步的診斷程序。</p>
+                            `
+                        },
+                        {
+                            title: "2.3.4.1. Abdominal Radiography / 腹腔X光攝影",
+                            content: `
+                                <p class='lang-en'>Abdominal radiographs are commonly performed as an initial screening tool. In many cases of IBD, radiographs may be unremarkable or show non-specific findings such as gas or fluid-filled intestinal loops.²² Their primary utility in the context of suspected IBD is to help exclude other conditions that can cause chronic vomiting or diarrhea, such as radiopaque foreign bodies, signs of mechanical obstruction (e.g., ileus), or large abdominal masses. Occasionally, radiographs might reveal findings suggestive of complications or concurrent conditions, such as loss of cranial abdominal detail and caudal displacement of the small intestine, which could indicate pancreatitis or abdominal effusion. However, radiographs lack the sensitivity to detect mucosal or subtle mural changes characteristic of IBD.</p>
+                                <p class='lang-zh'>腹腔X光攝影通常作為初步篩檢工具。在許多IBD病例中，X光片可能無異常發現或僅顯示非特異性發現，例如充滿氣體或液體的腸袢²²。在疑似IBD的情況下，其主要用途是協助排除其他可能導致慢性嘔吐或腹瀉的疾病，例如不透射線的異物、機械性阻塞的跡象(例如腸阻塞)或大的腹腔腫塊。偶爾，X光片可能顯示提示併發症或同時存在其他疾病的發現，例如顱側腹腔細節消失和小腸向尾側移位，這可能表示胰腺炎或腹腔積液。然而，X光攝影缺乏檢測IBD特有的黏膜或細微腸壁變化的靈敏度。</p>
+                            `
+                        },
+                        {
+                            title: "2.3.4.2. Abdominal Ultrasonography / 腹部超音波檢查",
+                            content: `
+                                <p class='lang-en'>Abdominal ultrasonography is a more sensitive imaging modality than radiography for evaluating the gastrointestinal tract and is commonly employed in the investigation of chronic enteropathies. While ultrasound findings in IBD can be suggestive, they are often non-specific and can overlap with other conditions, including SCL.</p>
+                                <p class='lang-zh'>腹部超音波檢查是比X光攝影更靈敏的評估胃腸道影像學方法，常用於慢性腸病的調查。雖然IBD的超音波發現可能具有提示性，但它們通常是非特異性的，並且可能與其他疾病(包括SCL)重疊。</p>
+                                
+                                <p class='lang-en'>Key ultrasonographic findings potentially associated with IBD include:</p>
+                                <p class='lang-zh'>與IBD相關的潜在超音波主要發現包括：</p>
+                                <ul class='list-disc pl-5 lang-en'>
+                                    <li>Intestinal Wall Thickening: This is one of the most common findings. The thickening can be diffuse, affecting long segments of the bowel, or segmental. A particular feature often noted, especially in cats and sometimes dogs with IBD, is disproportionate thickening of the muscularis layer (muscularis propria). A muscularis to submucosa layer ratio greater than one has been described as a potential indicator, particularly in cats. In dogs, IBD can manifest as segmental or diffuse muscularis thickening.⁶</li>
+                                    <li>Preservation or Alteration of Wall Layering: Typically, in IBD, the distinct five-layered appearance of the intestinal wall (mucosa, submucosa, muscularis, subserosa, serosa) is preserved, albeit with thickening of one or more layers. However, severe inflammation can sometimes lead to indistinct or mildly altered layering. Significant loss of layering is more commonly associated with neoplastic infiltrative diseases like lymphoma or adenocarcinoma, but overlap exists.</li>
+                                    <li>Mucosal Changes: The mucosal layer may appear thickened or have an altered echogenicity (hyperechoic or hypoechoic). In dogs with protein-losing enteropathy (often a severe form of IBD) and associated lymphangiectasia, distinct hyperechoic mucosal striations may be visible. These striations represent dilated lacteals. It is important to ensure the animal is fasted before the ultrasound, as lacteals can dilate normally after a meal.</li>
+                                    <li>Mesenteric Lymphadenopathy: Mild to moderate enlargement of the mesenteric lymph nodes is a common but non-specific finding in IBD. These nodes typically maintain their ovoid shape and normal corticomedullary echotexture ratio, although they can sometimes appear hypoechoic. More significant, rounded, and markedly hypoechoic lymph nodes might raise a higher suspicion for lymphoma.</li>
+                                    <li>Peritoneal Effusion: Small amounts of free fluid in the peritoneal cavity may be detected, particularly in cases with severe inflammation or hypoalbuminemia secondary to PLE.³</li>
+                                    <li>Normal Appearance: It is critically important to recognize that the small intestine can appear entirely normal on ultrasound in a significant number of animals with histologically confirmed IBD. A normal ultrasound does not rule out IBD.</li>
+                                </ul>
+                                <ul class='list-disc pl-5 lang-zh'>
+                                    <li>腸壁增厚：這是最常見的發現之一。增厚可以是瀰漫性的，影響長段腸道，也可以是節段性的。一個經常注意到的特徵，尤其是在貓和有時在患有IBD的狗中，是肌肉層(固有肌層)不成比例的增厚。肌肉層與黏膜下層的比例大於一被描述為一個潛在指標，尤其是在貓中。在狗中，IBD可表現為節段性或瀰漫性肌肉層增厚。</li>
+                                    <li>腸壁分層的保留或改變：通常，在IBD中，腸壁獨特的五層外觀(黏膜層、黏膜下層、肌肉層、漿膜下層、漿膜層)是保留的，儘管一層或多層可能增厚。然而，嚴重的炎症有時會導致分層模糊或輕微改變。明顯的分層喪失更常見於腫瘤浸潤性疾病，如淋巴瘤或腺癌，但存在重疊。</li>
+                                    <li>黏膜變化：黏膜層可能看起來增厚或回音性改變(高回音性或低回音性)。在患有蛋白質流失性腸病(通常是IBD的嚴重形式)和相關淋巴管擴張的狗中，可能會看到明顯的高回音性黏膜條紋。這些條紋代表擴張的乳糜管。重要的是要確保動物在超音波檢查前禁食，因為乳糜管在飯後會正常擴張。</li>
+                                    <li>腸繫膜淋巴結病：腸繫膜淋巴結輕度至中度腫大是IBD中常見但非特異性的發現。這些淋巴結通常保持其卵圓形狀和正常的皮質髓質回音結構比例，儘管它們有時可能呈現低回音性。更顯著、圓形且明顯低回音性的淋巴結可能會引起對淋巴瘤的更高懷疑。</li>
+                                    <li>腹膜積液：可能會檢測到腹腔內少量游離液體，尤其是在伴有嚴重炎症或繼發於PLE的低白蛋白血症的病例中。</li>
+                                    <li>外觀正常：至關重要的是要認識到，在相當數量的經組織病理學確診為IBD的動物中，小腸在超音波上可能完全正常。正常的超音波檢查不能排除IBD。</li>
+                                </ul>
+                                <p class='lang-en'>The limitations of ultrasound are significant in that many findings are non-specific. For instance, a thickened muscularis layer, while common in IBD, is also a frequent finding in feline SCL. Therefore, ultrasound is valuable for identifying abnormalities, guiding biopsy, and ruling out gross structural lesions, but definitive diagnosis of IBD or its differentiation from SCL often requires tissue sampling.</p>
+                                <p class='lang-zh'>超音波的局限性在於許多發現是非特異性的，這一點非常重要。例如，肌肉層增厚雖然在IBD 中常見，但在貓科 SCL 中也是一個常見的發現。因此，超音波對於識別異常、指導活檢和排除肉眼可見的結構性病變很有價值，但IBD的明確診斷或其與SCL的區分通常需要組織取樣。</p>
+                            `
+                        },
+                        {
+                            title: "2.3.4.3. Computed Tomography (CT) Findings / 電腦斷層掃描(CT)發現",
+                            content: `
+                                <p class='lang-en'>Computed tomography (CT) is less routinely utilized for the primary diagnosis of IBD in dogs and cats compared to ultrasonography, largely due to factors such as cost, availability, and the need for general anesthesia. However, CT can provide valuable information in specific circumstances, such as assessing the extent of disease, identifying complications (e.g., obstruction, perforation if suspected), evaluating extraluminal structures, or when ultrasonographic findings are equivocal or suggest a mass lesion that requires further characterization.³² While CT can demonstrate bowel wall thickening and contrast enhancement, its role in specific IBD diagnosis is often to support findings from other modalities or to rule out alternative diagnoses, especially neoplastic conditions.</p>
+                                <p class='lang-zh'>與超音波檢查相比，電腦斷層掃描(CT)在犬貓IBD的初步診斷中較少常規使用，這主要歸因於成本、可及性以及需要全身麻醉等因素。然而，在特定情況下，CT可以提供有價值的資訊，例如評估疾病範圍、識別併發症(例如，懷疑有阻塞、穿孔時)、評估管腔外結構，或者當超音波檢查結果模棱兩可或提示需要進一步定性的腫塊病變時³²。雖然CT 可以顯示腸壁增厚和對比增強，但其在特定 IBD 診斷中的作用通常是支持其他檢查方式的發現或排除替代診斷，尤其是腫瘤性疾病。</p>
+                                
+                                <p class='lang-en'>General CT features of an abnormal gastrointestinal wall, which could be seen in IBD, include thickening (normal small bowel wall thickness is typically considered 1-3 mm when distended) and altered contrast enhancement patterns. After intravenous contrast administration, the inflamed bowel wall may show increased enhancement. A "target" or "halo" sign, characterized by concentric rings of differing attenuation (e.g., mucosal hyperenhancement, submucosal hypoattenuation due to edema, and serosal/muscularis enhancement), can be indicative of active inflammation and edema but is not specific to IBD and can be seen in various enteritides.³² Dual-phase contrast-enhanced CT protocols may improve the conspicuity of the Gl wall layers and mucosal surface enhancement, potentially aiding in the detection of mucosal diseases.³³</p>
+                                <p class='lang-zh'>異常胃腸壁的一般CT特徵(可能在IBD中見到)包括增厚(正常擴張的小腸壁厚度通常認為是1-3毫米)和對比增強模式改變。靜脈注射對比劑後，發炎的腸壁可能顯示增強增加。「靶徵」或「暈徵」，其特徵是不同衰減值的同心環(例如，黏膜過度增強、由於水腫導致的黏膜下低衰減，以及漿膜/肌層增強)，可能表示活動性炎症和水腫，但並非IBD特有，可見於各種腸炎³²。雙期對比增強CT方案可以提高胃腸壁各層和黏膜表面增強的清晰度，可能有助於檢測黏膜疾病³³。</p>
+                                
+                                <p class='lang-en'>More specific CT findings for a subtype of IBD have been described in feline eosinophilic enteritis (EE). In cats with EE, CT may reveal diffuse intestinal wall thickening (mean thickness reported around 4.5 mm), with a notable and often marked thickening of the outer intestinal layer (muscularis and serosa). A layered appearance of the intestinal wall during early and delayed post-contrast phases, with the mucosa showing higher attenuation compared to the lower attenuation outer wall, is a characteristic feature. Associated mesenteric lymphadenomegaly is also common in feline EE. While mass formation is rare, these CT features, particularly the outer layer thickening and layered appearance, might help differentiate EE from other inflammatory or neoplastic conditions in cats.³⁶ However, it's important to note that such detailed CT characteristics are not as well-defined for other forms of IBD, like lymphoplasmacytic enteritis, in either dogs or cats.</p>
+                                <p class='lang-zh'>貓嗜酸性球性腸炎(EE)(IBD的一個亞型)已有更具體的CT發現描述。在患有EE的貓中，CT 可能顯示瀰漫性腸壁增厚(平均厚度報告約為4.5毫米)，其中外腸層(肌層和漿膜層)通常顯著增厚。在早期和延遲期對比後階段，腸壁呈現分層外觀，黏膜顯示較高衰減，而外壁則顯示較低衰減，這是一個特徵性表現。相關的腸繋膜淋巴結腫大在貓EE中也很常見。雖然腫塊形成罕見，但這些CT特徵，特別是外層增厚和分層外觀，可能有助於區分貓的EE 與其他炎性或腫瘤性疾病³⁶。然而，值得注意的是，對於犬貓的其他形式IBD，如淋巴漿細胞性腸炎，此類詳細的CT特徵尚未得到同樣明確的界定。</p>
+                                
+                                <p class='lang-en'>Overall, the specificity of CT for diagnosing IBD itself is limited. Findings such as bowel wall thickening and lymphadenopathy are non-specific and can be seen in various conditions, including lymphoma.³⁴ Therefore, CT is more often used as an adjunctive tool in complex cases or to rule out mimics rather than as a primary modality for IBD diagnosis.</p>
+                                <p class='lang-zh'>總體而言，CT診斷 IBD 本身的特異性有限。腸壁增厚和淋巴結腫大等發現是非特異性的，可見於多種疾病，包括淋巴瘤³⁴。因此，CT更常用作複雜病例中的輔助工具或排除其他相似疾病，而非 IBD 診斷的主要方式。</p>
+                            `
+                        },
+                        {
+                            title: "2.3.5. Cytological Evaluation / 細胞學評估",
+                            content: `
+                                <p class='lang-en'>Cytological evaluation in the context of suspected IBD can be performed on samples obtained via endoscopic brushings (exfoliative cytology), impression smears of endoscopic biopsies, or fine-needle aspiration (FNA) of thickened bowel segments or enlarged mesenteric lymph nodes identified on ultrasound.</p>
+                                <p class='lang-zh'>在疑似 IBD 的情況下，細胞學評估可對通過內視鏡刷取(剝離細胞學)、內視鏡活檢印片或超音波檢查發現的增厚腸段或腫大腸繫膜淋巴結進行細針抽吸(FNA)取得的樣本進行。</p>
+                                
+                                <p class='lang-en'>The primary finding on cytology that would support a diagnosis of IBD is an increased number of inflammatory cells. Depending on the predominant cell type, this could include lymphocytes and plasma cells (suggestive of lymphocytic-plasmacytic enteritis), eosinophils (suggestive of eosinophilic enteritis), or neutrophils (suggestive of neutrophilic or suppurative enteritis).¹⁵ The background may contain normal intestinal epithelial cells.</p>
+                                <p class='lang-zh'>支持IBD 診斷的細胞學主要發現是炎性細胞數量增加。根據主要細胞類型，這可能包括淋巴細胞和漿細胞(提示淋巴漿細胞性腸炎)、嗜酸性球(提示嗜酸性球性腸炎)或嗜中性球(提示嗜中性球性或化膿性腸炎)¹⁵。背景中可能含有正常的腸上皮細胞。</p>
+                                
+                                <p class='lang-en'>However, cytology has significant limitations in the diagnosis of IBD and, crucially, in differentiating IBD from neoplastic conditions like small cell lymphoma. The main drawback is the lack of architectural detail provided by cytological samples compared to histopathological sections.¹⁸ While cytology can identify a predominant inflammatory cell type, it often cannot definitively distinguish a reactive inflammatory infiltrate from a well-differentiated neoplastic lymphoid infiltrate, as the individual cell morphology of small neoplastic lymphocytes can be very similar to that of reactive lymphocytes. Cytology is generally more useful for detecting some infectious agents (e.g., Histoplasma yeast forms) or more overt neoplastic processes like large cell lymphoma or carcinoma, where the neoplastic cells exhibit more obvious criteria of malignancy.³⁹ Endoscopic exfoliative cytology has been suggested as a useful adjunct to mucosal biopsy for diagnosing IBD, and the presence of concurrent cytologic lesions of benign mucosal inflammation can increase confidence in a histologic diagnosis of mild IBD.¹² However, it is not a standalone diagnostic test for IBD and cannot reliably replace histopathology for definitive diagnosis or for ruling out lymphoma.</p>
+                                <p class='lang-zh'>然而，細胞學在IBD診斷中，尤其是在區分IBD 與小細胞淋巴瘤等腫瘤性疾病方面，存在顯著局限性。與組織病理學切片相比，細胞學樣本缺乏結構細節是其主要缺點¹⁸。雖然細胞學可以識別主要的炎性細胞類型，但通常無法明確區分反應性炎性浸潤與分化良好的腫瘤性淋巴樣浸潤，因為小的腫瘤性淋巴細胞的個體細胞形態可能與反應性淋巴細胞非常相似。細胞學通常在檢測某些感染性病原體(例如，組織胞漿菌酵母菌形式)或更明顯的腫瘤過程(如大細胞淋巴瘤或癌)方面更有用，因為這些腫瘤細胞表現出更明顯的惡性標準³⁹。內視鏡剝離細胞學已被認為是診斷IBD的黏膜活檢的有用輔助手段，並且同時存在良性黏膜炎症的細胞學病變可以增加對輕度 IBD 組織學診斷的信心¹²。然而，它並非 IBD 的獨立診斷測試，也不能可靠地取代組織病理學進行明確診斷或排除淋巴瘤。</p>
+                            `
+                        },
+                        {
+                            title: "2.3.6. Histopathological Diagnosis / 組織病理學診斷",
+                            content: `
+                                <p class='lang-en'>Intestinal biopsy with subsequent histopathological evaluation is considered the gold standard for the definitive diagnosis of IBD and for characterizing the type and severity of inflammation.³ Biopsy samples can be obtained via endoscopy (providing mucosal and sometimes submucosal samples) or through full-thickness surgical biopsy (laparotomy or laparoscopy).</p>
+                                <p class='lang-zh'>腸道活檢及其後的組織病理學評估被認為是明確診斷IBD 以及定性炎症類型和嚴重程度的金標準。活檢樣本可通過內視鏡(提供黏膜層，有時為黏膜下層樣本)或全層手術活檢(開腹手術或腹腔鏡手術)獲得。</p>
+                                
+                                <p class='lang-en'>Key histopathological features supporting a diagnosis of IBD include:</p>
+                                <p class='lang-zh'>組織病理學上支持IBD診斷的主要特徵包括：</p>
+                                <ul class='list-disc pl-5 lang-en'>
+                                    <li>Inflammatory Infiltrates: An increased number and altered distribution of inflammatory cells within the lamina propria and sometimes the epithelium are cardinal features. The predominant cell type defines the morphological classification of IBD³:
+                                        <ul class='list-circle pl-5'>
+                                            <li>Lymphocytic-plasmacytic enteritis/colitis: Most common form, characterized by increased lymphocytes and plasma cells.</li>
+                                            <li>Eosinophilic gastroenteritis/colitis: Characterized by a predominant eosinophilic infiltrate.</li>
+                                            <li>Granulomatous enteritis/colitis: Characterized by the presence of granulomas (aggregates of macrophages, often with lymphocytes and other inflammatory cells). This form is less common.</li>
+                                            <li>Neutrophilic (suppurative) enteritis/colitis: Predominance of neutrophils, often suggesting an acute or erosive component, or a specific infectious process if primary.</li>
+                                        </ul>
+                                    </li>
+                                    <li>Architectural Changes: Chronic inflammation often leads to alterations in the normal mucosal architecture. These changes are crucial for diagnosing IBD and assessing its chronicity and severity. Common architectural changes include:
+                                        <ul class='list-circle pl-5'>
+                                            <li>Villous atrophy or blunting: Shortening and widening of the intestinal villi in the small intestine.</li>
+                                            <li>Villous fusion: Adjacent villi may fuse.</li>
+                                            <li>Crypt dilation, distortion, or abscesses: Crypts may become dilated, irregularly shaped, or contain neutrophils (crypt abscesses).</li>
+                                            <li>Increased intraepithelial lymphocytes (IELs): An increased number of lymphocytes within the epithelial lining.</li>
+                                            <li>Epithelial injury: This can range from attenuation and vacuolation of enterocytes to erosions (loss of superficial epithelium) or ulcerations (loss of epithelium extending into the lamina propria or deeper).</li>
+                                            <li>Lamina propria fibrosis: Deposition of collagen in the lamina propria, indicating chronic inflammation and repair attempts.</li>
+                                            <li>Lacteal dilation (lymphangiectasia): Dilated lymphatic vessels within the villi, often seen with PLE.</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                <ul class='list-disc pl-5 lang-zh'>
+                                    <li>炎性浸潤：固有層內，有時在上皮內，炎性細胞數量增加且分佈改變是主要特徵。主要細胞類型決定了IBD的形態學分類³：
+                                        <ul class='list-circle pl-5'>
+                                            <li>淋巴漿細胞性腸炎/結腸炎：最常見的形式，特徵是淋巴細胞和漿細胞增多。</li>
+                                            <li>嗜酸性球性胃腸炎/結腸炎：特徵是嗜酸性球浸潤為主。</li>
+                                            <li>肉芽腫性腸炎/結腸炎：特徵是存在肉芽腫(巨噬細胞聚集，常伴有淋巴細胞和其他炎性細胞)。此形式較少見。</li>
+                                            <li>嗜中性球性(化膿性)腸炎/結腸炎：以嗜中性球為主，通常提示急性或糜爛性成分，或者如果是原發性的，則提示特定的感染過程。</li>
+                                        </ul>
+                                    </li>
+                                    <li>結構改變：慢性炎症常導致正常黏膜結構的改變。這些改變對於診斷IBD及評估其慢性度和嚴重程度至關重要。常見的結構改變包括：
+                                        <ul class='list-circle pl-5'>
+                                            <li>絨毛萎縮或變鈍：小腸絨毛變短變寬。</li>
+                                            <li>絨毛融合：相鄰絨毛可能融合。</li>
+                                            <li>腺窩擴張、變形或膿瘍：腺窩可能擴張、形狀不規則或含有嗜中性球(腺窩膿瘍)。</li>
+                                            <li>上皮內淋巴細胞(IELs)增多：上皮襯裡內淋巴細胞數量增加。</li>
+                                            <li>上皮損傷：範圍可從腸上皮細胞變薄和空泡化到糜爛(淺表上皮缺失)或潰瘍(上皮缺失延伸至固有層或更深層)。</li>
+                                            <li>固有層纖維化：固有層內膠原蛋白沉積，表明慢性炎症和修復嘗試。</li>
+                                            <li>乳糜管擴張(淋巴管擴張)：絨毛內淋巴管擴張，常見於PLE。</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+
+                                <p class='lang-en'>The World Small Animal Veterinary Association (WSAVA) Gastrointestinal Standardization Group has developed guidelines to standardize the histopathological interpretation of Gl inflammation in dogs and cats. These guidelines provide a standardized pictorial and textual template for describing major histopathological changes, including morphological abnormalities (like villous stunting, epithelial injury, crypt distortion, fibrosis, lacteal dilation) and inflammatory cell infiltrates (lymphocytes, plasma cells, eosinophils, neutrophils, macrophages) in various Gl segments (gastric body, antrum, duodenum, colon).⁴⁰ The system aims to define mild, moderate, and severe pathological changes to improve consistency among pathologists. For example, a simplified model based on WSAVA criteria focuses on gastric parameters (intraepithelial lymphocytes [IELs], lamina propria [LP] infiltrates, mucosal fibrosis), duodenal parameters (villus atrophy, epithelial injury, IELs, crypt changes, LP infiltrates), and colonic parameters (epithelial injury, crypt dilation, fibrosis, LP infiltrates, goblet cell depletion).⁴⁰ Generally, a 4-point grading scale (normal, mild, moderate, severe/marked) is applied to assess the severity of inflammation and architectural changes. Some grading schemes prioritize the extent of architectural disruption and mucosal epithelial changes over mere quantification of inflammatory cells.¹²</p>
+                                <p class='lang-zh'>世界小動物獸醫協會(WSAVA) 胃腸道標準化小組制定了指南，以標準化犬貓胃腸道炎症的組織病理學判讀。這些指南為描述主要的組織病理學變化提供了標準化的圖文模板，包括形態學異常(如絨毛變鈍、上皮損傷、腺窩扭曲、纖維化、乳糜管擴張)和不同胃腸道部位(胃體、胃竇、十二指腸、結腸)的炎性細胞浸潤(淋巴細胞、漿細胞、嗜酸性球、嗜中性球、巨噬細胞)⁴⁰。該系統旨在定義輕度、中度和重度病理變化，以提高病理學家之間的一致性。例如，一個基於WSAVA 標準的簡化模型側重於胃部參數(上皮內淋巴細胞[IELs]、固有層[LP]浸潤、黏膜纖維化)、十二指腸參數(絨毛萎縮、上皮損傷、IELs、腺窩變化、LP浸潤)和結腸參數(上皮損傷、腺窩擴張、纖維化、LP浸潤、杯狀細胞耗竭)⁴⁰。通常，採用四點分級量表(正常、輕度、中度、重度/顯著)來評估炎症和結構改變的嚴重程度。一些分級方案更側重於結構破壞和黏膜上皮變化的程度，而非僅僅量化炎性細胞¹²。</p>
+
+                                <p class='lang-en'>Despite these efforts, challenges in histopathological diagnosis persist. These include subjectivity in interpretation among pathologists, variability in biopsy quality (especially with small, superficial endoscopic samples which may not capture the full extent of disease or deeper lesions like fibrosis), and the inherent difficulty in distinguishing severe inflammatory changes from early or low-grade neoplastic infiltrates, particularly small cell lymphoma. This latter challenge is a critical point of overlap and will be discussed further. The persistence of inter-observer variability even with standardization efforts underscores the inherent complexity of interpreting inflammatory lesions in the Gl tract.</p>
+                                <p class='lang-zh'>儘管做出了這些努力，組織病理學診斷方面的挑戰依然存在。這些挑戰包括病理學家之間判讀的主觀性、活檢品質的變異性(尤其是小型、淺層的內視鏡樣本，可能無法捕捉到疾病的全部範圍或更深層的病變如纖維化)，以及區分嚴重炎性變化與早期或低度惡性腫瘤浸潤(特別是小細胞淋巴瘤)的固有困難。後者是IBD與SCL之間的一個關鍵重疊點，將在後續進一步討論。即使在標準化努力之後，觀察者間變異性的持續存在也突顯了判讀胃腸道炎性病變的內在複雜性。</p>
+                            `
+                        },
+                        {
+                            title: "2.4. The Spectrum of Chronic Enteropathies (FRE, ARE, IRE/IBD) / 慢性腸病的譜系 (FRE, ARE, IRE/IBD)",
+                            content: `
+                                <p class='lang-en'>The diagnosis of IBD is often contextualized within a broader classification of chronic enteropathies (CEs) based on their response to sequential therapeutic trials. IBD is generally considered an immunosuppressant-responsive enteropathy (IRE), meaning it responds to corticosteroids or other immunosuppressive drugs but not adequately to dietary changes or antibiotics alone. This diagnostic framework involves systematically ruling out other forms of CE before confirming IRE/IBD.¹</p>
+                                <p class='lang-zh'>IBD 的診斷通常基於其對序貫治療試驗的反應，在慢性腸病(CEs)的更廣泛分類中進行。IBD 通常被認為是一種免疫抑制劑反應性腸病(IRE)，這意味著它對皮質類固醇或其他免疫抑制藥物有反應，但對單獨的飲食改變或抗生素反應不足。這種診斷框架涉及在確認IRE/IBD 之前系統地排除其他形式的CE¹。</p>
+                                
+                                <ul class='list-disc pl-5 lang-en'>
+                                    <li>Food-Responsive Enteropathy (FRE): These are cases where chronic Gl signs resolve with dietary modification. Common dietary strategies include feeding a highly digestible, low-residue diet, a novel protein diet (using protein sources the animal has not been exposed to previously), or a hydrolyzed protein diet (where proteins are broken down into smaller, less antigenic peptides). A strict dietary trial for several weeks is necessary to assess response.</li>
+                                    <li>Antibiotic-Responsive Enteropathy (ARE): Also known as antibiotic-responsive diarrhea (ARD), these cases show improvement in clinical signs with a course of antibiotic therapy, commonly metronidazole or tylosin. The underlying mechanism is thought to involve modulation of dysbiosis or direct effects on certain bacterial populations.</li>
+                                    <li>Immunosuppressant-Responsive Enteropathy (IRE) / Steroid-Responsive Enteropathy (SRE) / IBD: If clinical signs do not resolve with appropriate dietary and antibiotic trials, and other causes have been excluded, a diagnosis of IRE (often equated with IBD or steroid-responsive enteropathy) is considered. Confirmation typically requires histopathological evidence of intestinal inflammation and a positive clinical response to immunosuppressive therapy (e.g., corticosteroids like prednisolone, or other agents such as cyclosporine or azathioprine in refractory cases).²</li>
+                                </ul>
+                                <ul class='list-disc pl-5 lang-zh'>
+                                    <li>食物反應性腸病(FRE)：這些病例的慢性胃腸道症狀可通過飲食調整得到解決。常見的飲食策略包括餵食高度易消化、低殘渣飲食、新型蛋白質飲食(使用動物先前未接觸過的蛋白質來源)或水解蛋白飲食(蛋白質被分解成較小、抗原性較低的肽)。評估反應需要進行數週嚴格的飲食試驗。</li>
+                                    <li>抗生素反應性腸病(ARE)：也稱為抗生素反應性腹瀉(ARD)，這些病例在一個療程的抗生素治療(常用甲硝唑或泰樂菌素)後臨床症狀有所改善。其潛在機制被認為涉及調節菌群失調或對某些細菌群體的直接影響。</li>
+                                    <li>免疫抑制劑反應性腸病(IRE)/類醇反應性腸病(SRE)/IBD：如果臨床症狀在適當的飲食和抗生素試驗後未解決，並且已排除其他原因，則考慮診斷為IRE(通常等同於IBD 或類固醇反應性腸病)。確診通常需要腸道炎症的組織病理學證據以及對免疫抑制治療(例如，皮質類固醇如潑尼松龍，或在頑固性病例中使用環孢素或硫唑嘌呤等其他藥物)的陽性臨床反應。</li>
+                                </ul>
+
+                                <p class='lang-en'>This sequential diagnostic and therapeutic approach is fundamental because the clinical signs of FRE, ARE, and IRE/IBD can be indistinguishable. It allows for the least invasive and most targeted treatments to be attempted first, reserving immunosuppressive medications for cases that genuinely require them. The response to these trials, or lack thereof, is a key component in the diagnostic algorithm for chronic enteropathies.</p>
+                                <p class='lang-zh'>這種序貫的診斷和治療方法至關重要，因為FRE、ARE和IRE/IBD 的臨床症狀可能無法區分。它允許首先嘗試侵入性最小且最具針對性的治療，將免疫抑制藥物保留給真正需要的病例。對這些試驗的反應或缺乏反應是慢性腸病診斷流程中的關鍵組成部分。</p>
+                            `
+                        }
+                    ]
+                },
+                {
+                    id: "section3",
+                    buttonText: "Section 3 / 第3節<br><span class='text-xs'>Small Cell GI Lymphoma (SCL) / 犬貓胃腸道小細胞淋巴瘤(SCL)</span>",
+                    title: "Section 3: Small Cell Gastrointestinal Lymphoma (SCL) in Dogs and Cats<br>第3節:犬貓胃腸道小細胞淋巴瘤(SCL)",
+                    subsections: [
+                        {
+                            title: "3.1. Overview and Clinical Significance / 概述與臨床意義",
+                            content: `
+                                <p class='lang-en'>Small cell gastrointestinal lymphoma (SCL) is a significant form of hematopoietic cancer affecting both dogs and cats, though its prevalence and characterization differ between the species. In cats, alimentary lymphoma is the most common anatomical form of lymphoma, and SCL (often referred to as low-grade alimentary lymphoma or enteropathy-associated T-cell lymphoma type II, EATL type II) represents a substantial proportion of these cases. Feline SCL is typically an indolent, slowly progressive disease, predominantly of T-cell immunophenotype, and often confined to the mucosal layer of the intestine.⁸</p>
+                                <p class='lang-zh'>小細胞胃腸道淋巴瘤(SCL)是影響犬貓的一種重要造血系統癌症，儘管其盛行率和特徵在不同物種間有所差異。在貓隻中，消化道淋巴瘤是最常見的淋巴瘤解剖學形式，而SCL(通常稱為低度惡性消化道淋巴瘤或第二型腸病相關T細胞淋巴瘤，EATL type II)佔這些病例的相當大一部分。貓SCL通常是一種惰性、進展緩慢的疾病，主要為T細胞免疫表型，且常局限於腸道黏膜層⁸。</p>
+                                
+                                <p class='lang-en'>In dogs, alimentary lymphoma accounts for a smaller percentage of all lymphomas (reported as <10%) compared to the more common multicentric form.³⁴ Small cell variants of Gl lymphoma in dogs are less frequently reported and less well-characterized in the literature than high-grade (large cell) Gl lymphomas or feline SCL.⁵⁰ However, studies are emerging that describe canine small cell intestinal lymphoma, with one report indicating a T-cell phenotype for these cases.⁵⁰ The distinction between low-grade SCL and high-grade Gl lymphoma is critical in both species due to significant differences in treatment approach and prognosis. The relative scarcity of detailed information specifically on canine small cell Gl lymphoma, compared to feline SCL or general canine Gl lymphoma, suggests it might be underdiagnosed, less common, or has only more recently been studied as a distinct entity in dogs.</p>
+                                <p class='lang-zh'>與較常見的多中心型淋巴瘤相比，犬隻消化道淋巴瘤佔所有淋巴瘤的比例較小(據報導 <10%)³⁴。與高度惡性(大細胞)消化道淋巴瘤或貓SCL 相比，犬隻胃腸道淋巴瘤的小細胞變異型在文獻中報導較少且特徵描述較不充分⁵⁰。然而，已有描述犬隻小細胞腸道淋巴瘤的研究出現，其中一份報告指出這些病例為T細胞表型⁵⁰。由於治療方法和預後存在顯著差異，區分低度惡性SCL 和高度惡性胃腸道淋巴瘤在兩個物種中都至關重要。相較於貓SCL 或一般的犬隻胃腸道淋巴瘤，關於犬隻小細胞胃腸道淋巴瘤的詳細資訊相對缺乏，這可能表明它在犬隻中可能診斷不足、較不常見，或者直到最近才被作為一個獨立的實體進行研究。</p>
+                            `
+                        },
+                        {
+                            title: "3.2. Clinical Manifestations / 臨床表現",
+                            content: `
+                                <p class='lang-en'>The clinical signs of SCL in both dogs and cats are often chronic, insidious in onset, and remarkably similar to those observed in IBD. This overlap is a primary reason for the diagnostic challenges encountered. Common presentations include:</p>
+                                <p class='lang-zh'>犬貓 SCL 的臨床症狀通常是慢性的、潜隱發作的，並且與IBD 中觀察到的症狀非常相似。這種重疊是造成診斷困難的主要原因。常見的表現包括：</p>
+                                <ul class='list-disc pl-5 lang-en'>
+                                    <li>Weight loss: This is a very frequent sign, particularly in cats with SCL, and may be gradual but progressive.</li>
+                                    <li>Vomiting: Chronic, intermittent vomiting is common.</li>
+                                    <li>Diarrhea: This can manifest as small bowel diarrhea (voluminous, watery) or large bowel diarrhea (increased frequency, mucus, hematochezia), depending on the primary site of infiltration.</li>
+                                    <li>Appetite Changes: Appetite may be decreased (hyporexia or anorexia) or, less commonly, increased (polyphagia), particularly if malabsorption is severe.⁸</li>
+                                    <li>Lethargy: A general decrease in activity and energy levels is often reported.³⁴</li>
+                                </ul>
+                                <ul class='list-disc pl-5 lang-zh'>
+                                    <li>體重減輕：這是一個非常常見的症狀，尤其是在患有SCL的貓中，可能是逐漸但進行性的。</li>
+                                    <li>嘔吐：慢性、間歇性嘔吐很常見。</li>
+                                    <li>腹瀉：根據主要浸潤部位的不同，可表現為小腸性腹瀉(量多、水樣)或大腸性腹瀉(頻率增加、黏液、便血)。</li>
+                                    <li>食慾改變：食慾可能下降(食慾減退或厭食)，或者較少見地增加(多食)，尤其是在吸收不良嚴重的情況下⁸。</li>
+                                    <li>精神沉鬱：通常會報告活動和精力水平普遍下降³⁴。</li>
+                                </ul>
+                                
+                                <p class='lang-en'>Physical examination findings can be variable. In some animals, particularly those with diffuse SCL, the physical examination may be entirely normal. In others, palpation of the abdomen may reveal thickened intestinal loops, mesenteric lymphadenopathy (enlarged lymph nodes in the tissue supporting the intestines), or, less commonly with SCL, discrete abdominal masses. It is important to note that acute and more severe clinical signs are generally more characteristic of high-grade (large cell) Gl lymphoma rather than the typically indolent SCL.</p>
+                                <p class='lang-zh'>理學檢查結果可能多變。在某些動物中，特別是患有瀰漫性SCL的動物，理學檢查可能完全正常。在其他動物中，腹部觸診可能發現腸袢增厚、腸繋膜淋巴結腫大(支撐腸道的組織中淋巴結腫大)，或者較少見於SCL的離散腹部腫塊。值得注意的是，急性和更嚴重的臨床症狀通常更具高度惡性(大細胞)胃腸道淋巴瘤的特徵，而非通常呈惰性的SCL。</p>
+                            `
+                        },
+                        {
+                            title: "3.3. Diagnostic Workup and Key Findings / 診斷檢查與主要發現",
+                            content: `
+                                <p class='lang-en'>The diagnostic approach to suspected SCL mirrors that for IBD in many initial steps, focusing on ruling out other causes of chronic enteropathy and characterizing the nature of the Gl disease. However, definitive diagnosis of SCL and its differentiation from severe IBD often requires more specialized techniques.</p>
+                                <p class='lang-zh'>疑似SCL 的診斷方法在許多初始步驟上與IBD相似，重點是排除慢性腸病的其他原因並描述胃腸道疾病的性質。然而，SCL的明確診斷及其與嚴重IBD的區分通常需要更專業的技術。</p>
+                            `
+                        },
+                        {
+                            title: "3.3.1. Hematological and Biochemical Profiles / 血液學與生化學分析",
+                            content: `
+                                <p class='lang-en'>In cats with SCL, routine blood work (CBC and serum chemistry) is often normal or may show only non-specific changes, similar to IBD. Potential abnormalities include a mild non-regenerative anemia (anemia of chronic disease) or a mild neutrophilia. Hypoalbuminemia can occur, and if present, might be more suggestive of a more severe disease process such as lymphoma or severe IBD with protein loss, rather than mild IBD.¹⁰ Hyperglobulinemia is generally not a prominent feature of feline SCL.</p>
+                                <p class='lang-zh'>在患有SCL 的貓中，常規血液檢查(CBC和血清生化)通常正常，或僅顯示非特異性變化，與IBD 相似。潜在的異常包括輕度非再生性貧血(慢性病貧血)或輕度嗜中性球增多。可能出現低白蛋白血症，如果存在，可能更提示較嚴重的疾病過程，如淋巴瘤或伴有蛋白質流失的嚴重 IBD，而非輕度IBD¹⁰。高球蛋白血症通常不是貓 SCL 的顯著特徵。</p>
+                                
+                                <p class='lang-en'>In dogs with Gl lymphoma (including potential small cell variants, though less specifically detailed for SCL alone), hematological findings can include mild-to-moderate non-regenerative anemia. This anemia can be due to chronic disease or, in some cases, chronic Gl blood loss.⁵³ Neutrophilia may also be observed, and some reports suggest it is more frequently associated with T-cell lymphomas.⁵³ Hypoalbuminemia is a common finding in dogs with primary intestinal lymphoma, reported in as many as 55% of cases in one study, reflecting protein loss or malabsorption.⁵⁴ Paraneoplastic hypercalcemia, sometimes seen with other forms of T-cell lymphoma in dogs, is generally rare with SCL but should be considered in the differential for hypercalcemia with Gl signs.³⁴ Elevations in liver enzymes (ALT, AST) or azotemia (increased BUN, creatinine) can occur secondary to metastatic disease, concurrent organ involvement, or dehydration resulting from Gl losses.³⁴</p>
+                                <p class='lang-zh'>在患有胃腸道淋巴瘤的犬中(包括潛在的小細胞變異型，儘管對SCL本身的特異性描述較少)，血液學發現可包括輕度至中度非再生性貧血。這種貧血可能是由於慢性疾病，或者在某些情況下，是由於慢性胃腸道失血所致⁵³。也可能觀察到嗜中性球增多，一些報告表明這更常與T細胞淋巴瘤相關⁵³。低白蛋白血症是原發性腸道淋巴瘤犬隻的常見發現，在一項研究中高達55%的病例報告有此現象，反映了蛋白質流失或吸收不良⁵⁴。副腫瘤性高鈣血症，有時見於犬隻其他形式的T細胞淋巴瘤，通常在SCL 中罕見，但在伴有胃腸道症狀的高鈣血症鑑別診斷中應予以考慮³⁴。肝酶(ALT, AST)升高或氮血症(BUN、肌酸酐升高)可能由於轉移性疾病、併發器官受累或胃腸道流失導致的脫水所致³⁴。</p>
+                            `
+                        },
+                        {
+                            title: "3.3.2. Cobalamin and Folate Assessment / 鈷胺素和葉酸評估",
+                            content: `
+                                <p class='lang-en'>Similar to IBD, disturbances in serum cobalamin and folate levels are frequently observed in animals with SCL, reflecting malabsorption due to diffuse intestinal mucosal disease.</p>
+                                <p class='lang-zh'>與IBD 類似，在患有SCL的動物中經常觀察到血清鈷胺素和葉酸水平的紊亂，這反映了由於瀰漫性腸黏膜疾病引起的吸收不良。</p>
+                                <ul class='list-disc pl-5 lang-en'>
+                                    <li>Hypocobalaminemia (low serum cobalamin): This is a very common finding in cats with SCL, with one study reporting it in 78% of cases. Low cobalamin levels have also been associated with a shorter remission duration in some feline SCL patients.¹⁰ In dogs with small cell intestinal T-cell lymphoma, hypocobalaminemia was also a reported finding.⁵⁰</li>
+                                    <li>Folate levels: Serum folate concentrations may also be reduced (hypofolatemia) in SCL, indicating proximal small intestinal malabsorption.¹⁰ Conversely, some studies in cats have noted that folate levels might be higher in alimentary lymphoma compared to IBD, potentially due to altered microbial synthesis or absorption, though this is not a consistent finding.¹¹</li>
+                                </ul>
+                                <ul class='list-disc pl-5 lang-zh'>
+                                    <li>低鈷胺素血症(血清鈷胺素低下)：這在患有SCL的貓中是一個非常常見的發現，一項研究報告稱 78%的病例存在此現象。在一些貓SCL患者中，低鈷胺素水平也與較短的緩解期相關¹⁰。在患有小細胞腸道T細胞淋巴瘤的犬隻中，低鈷胺素血症也是一個報告的發現⁵⁰。</li>
+                                    <li>葉酸水平：在SCL中，血清葉酸濃度也可能降低(低葉酸血症)，表明近端小腸吸收不良¹⁰。相反，一些對貓的研究指出，與IBD相比，消化道淋巴瘤的葉酸水平可能更高，這可能是由於微生物合成或吸收的改變，儘管這並非一致的發現¹¹。</li>
+                                </ul>
+                                <p class='lang-en'>The presence of hypocobalaminemia and/or altered folate levels strongly supports significant small intestinal dysfunction and malabsorption, common to both severe IBD and SCL.</p>
+                                <p class='lang-zh'>低鈷胺素血症和/或葉酸水平改變的存在強烈支持嚴重的小腸功能障礙和吸收不良，這在嚴重IBD 和SCL 中都很常見。</p>
+                            `
+                        },
+                        {
+                            title: "3.3.3. Diagnostic Imaging / 診斷影像學",
+                            content: `
+                                <p class='lang-en'>Diagnostic imaging, particularly abdominal ultrasonography, is a cornerstone in the investigation of suspected SCL. Radiography and CT also play roles, primarily in ruling out other conditions or for staging.</p>
+                                <p class='lang-zh'>診斷影像學，尤其是腹部超音波檢查，是疑似SCL 調查的基石。放射線攝影和CT也在其中扮演角色，主要用於排除其他疾病或進行分期。</p>
+                            `
+                        },
+                        {
+                            title: "3.3.3.1. Abdominal Radiography / 腹部X光攝影",
+                            content: `
+                                <p class='lang-en'>Abdominal radiographs are generally non-specific for SCL, especially the diffuse form. Their main utility is in excluding other causes of chronic Gl signs, such as radiopaque foreign bodies or signs of complete obstruction.³⁴ If SCL presents as a discrete, large mass or causes significant regional lymphadenopathy, radiographs might show a non-specific mass effect or loss of serosal detail, but these findings are not diagnostic for SCL.</p>
+                                <p class='lang-zh'>腹部X光攝影對於SCL，尤其是瀰漫型SCL，通常不具特異性。其主要用途是排除慢性胃腸道症狀的其他原因，例如不透射線的異物或完全阻塞的跡象³⁴。如果SCL表現為離散的大腫塊或引起顯著的局部淋巴結腫大，X光片可能顯示非特異性質塊效應或漿膜細節消失，但這些發現對於SCL的診斷並無決定性。</p>
+                            `
+                        },
+                        {
+                            title: "3.3.3.2. Abdominal Ultrasonography / 腹部超音波檢查",
+                            content: `
+                                <p class='lang-en'>Ultrasonography is a highly valuable tool for assessing intestinal changes and identifying features suggestive of SCL, although significant overlap with IBD exists.⁶</p>
+                                <p class='lang-zh'>超音波檢查是評估疑似SCL的極有價值的工具，儘管與IBD 存在顯著重疊⁶。</p>
+                                
+                                <p class='lang-en'>Key ultrasonographic findings in SCL may include:</p>
+                                <p class='lang-zh'>SCL 的主要超音波發現可能包括：</p>
+                                <ul class='list-disc pl-5 lang-en'>
+                                    <li>Intestinal Wall Thickening: Diffuse or segmental thickening of the intestinal wall is a common finding. In feline SCL, and also observed in canine Gl lymphoma, there is often a disproportionate thickening of the muscularis layer (muscularis propria), sometimes described as a muscularis to submucosa ratio greater than one.⁶</li>
+                                    <li>Alteration or Loss of Wall Layering: While severe loss of the normal five-layered intestinal architecture is more typical of high-grade lymphoma or other aggressive neoplasms, some degree of altered or indistinct layering can be seen with SCL. However, SCL, particularly the low-grade forms, can also present with preserved or only subtly altered layering, contributing to the overlap with IBD.</li>
+                                    <li>Mesenteric Lymphadenopathy: Enlargement of mesenteric lymph nodes is frequently observed in SCL. These lymph nodes are often described as rounded (losing their typical ovoid shape) and hypoechoic. While lymphadenopathy can also occur with IBD, marked, rounded, and significantly hypoechoic nodes are considered more suggestive of lymphoma. In a study differentiating feline low-grade intestinal T-cell lymphoma (LGITL) from lymphoplasmacytic enteritis (LPE), a rounded jejunal lymph node was more prevalent in cats with LGITL.⁵⁵</li>
+                                    <li>Mass Lesions: SCL can manifest as discrete focal masses, multiple masses, or as a diffuse infiltrative thickening of the bowel wall without a distinct mass.⁶</li>
+                                    <li>Peritoneal Effusion: Small amounts of abdominal effusion may be present, particularly in cats with LGITL compared to LPE.⁵⁵</li>
+                                    <li>Normal Appearance: Importantly, the intestinal tract can appear ultrasonographically normal in some animals with SCL, particularly in dogs (approximately 20% of canine lymphoma cases may have a normal intestinal ultrasound) and also in cats with diffuse disease.</li>
+                                </ul>
+                                <ul class='list-disc pl-5 lang-zh'>
+                                    <li>腸壁增厚：瀰漫性或節段性腸壁增厚是常見發現。在貓SCL中，以及在犬胃腸道淋巴瘤中也觀察到，通常存在肌肉層(固有肌層)不成比例的增厚，有時描述為肌肉層與黏膜下層之比大於一⁶。</li>
+                                    <li>腸壁分層改變或喪失：雖然正常五層腸道結構的嚴重喪失更典型於高度惡性淋巴瘤或其他侵襲性腫瘤，但在SCL中可見到一定程度的改變或模糊分層。然而，SCL，特別是低度惡性形式，也可能表現為分層保留或僅有細微改變，這導致了與IBD的重疊。</li>
+                                    <li>腸繫膜淋巴結病：在SCL 中經常觀察到腸繫膜淋巴結腫大。這些淋巴結通常被描述為圓形(失去其典型的卵圓形狀)和低回音性。雖然IBD 也可能發生淋巴結腫大，但顯著、圓形且明顯低回音性的淋巴結被認為更具淋巴瘤的提示性。在一項區分貓低度惡性腸道T細胞淋巴瘤(LGITL)與淋巴漿細胞性腸炎(LPE)的研究中，圓形空腸淋巴結在患有LGITL 的貓中更為普遍⁵⁵。</li>
+                                    <li>腫塊病變：SCL可表現為離散的局灶性腫塊、多發性腫塊，或表現為腸壁的瀰漫性浸潤性增厚而無明顯腫塊⁶。</li>
+                                    <li>腹膜積液：與LPE相比，患有LGITL的貓可能存在少量腹腔積液，尤其是在貓中⁵⁵。</li>
+                                    <li>外觀正常：重要的是，在某些患有SCL的動物中，腸道在超音波檢查下可能看起來正常，尤其是在犬隻中(約20%的犬淋巴瘤病例可能具有正常的腸道超音波檢查結果)以及患有瀰漫性疾病的貓隻中。</li>
+                                </ul>
+                                
+                                <p class='lang-en'>The considerable overlap in ultrasonographic findings between IBD and SCL (e.g., wall thickening, mild lymphadenopathy, even normal appearance) means that ultrasound alone is often insufficient for a definitive diagnosis or differentiation. However, features like significant, rounded, hypoechoic lymphadenopathy or clear mass lesions increase the suspicion for lymphoma and can guide FNA or biopsy.</p>
+                                <p class='lang-zh'>IBD 和SCL 之間超音波檢查結果的顯著重疊(例如，腸壁增厚、輕度淋巴結腫大，甚至外觀正常)意味著單獨的超音波檢查通常不足以進行明確診斷或區分。然而，諸如顯著、圓形、低回音性淋巴結腫大或明顯的腫塊病變等特徵會增加對淋巴瘤的懷疑，並可指導細針抽吸或活檢。</p>
+                            `
+                        },
+                        {
+                            title: "3.3.3.3. Computed Tomography (CT) Findings / 電腦斷層掃描(CT)發現",
+                            content: `
+                                <p class='lang-en'>CT imaging can be employed for staging Gl lymphoma, assessing the extent of disease (e.g., involvement of multiple bowel segments, distant lymph nodes, or other organs), and further characterizing mass lesions or significant lymphadenopathy identified on ultrasound.³⁴ In canine Gl lymphoma (general), CT may reveal features such as multifocal Gl involvement, which is more characteristic of lymphoma than other tumor types. Lymphadenopathy associated with lymphoma tends to be widespread rather than strictly regional. The growth pattern of lymphoma on CT is often described as eccentric, and mineralization within the tumor is typically absent.³⁸ Contrast-enhanced CT can help delineate tumor margins, assess vascularity, and identify areas of necrosis or cavitation if present, although specific enhancement patterns for SCL versus other lymphomas or inflammatory conditions are not always distinct. A 2023 study mentioned that CT can assist in distinguishing tumor types (adenocarcinoma, lymphoma, spindle cell sarcoma) in dogs with small intestinal masses based on unique growth and contrast enhancement patterns, but histological assessment remains essential for definitive diagnosis.³⁴</p>
+                                <p class='lang-zh'>電腦斷層掃描(CT)可用於胃腸道淋巴瘤的分期、評估疾病範圍(例如，多個腸段、遠處淋巴結或其他器官的受累情況)，以及進一步描述超音波檢查發現的腫塊病變或顯著淋巴結腫大³⁴。在犬隻胃腸道淋巴瘤(一般情況)中，CT可能顯示多灶性胃腸道受累等特徵，這比其他腫瘤類型更具淋巴瘤的特徵性。與淋巴瘤相關的淋巴結腫大往往是廣泛性的，而非嚴格的區域性。CT上淋巴瘤的生長模式通常被描述為偏心性，腫瘤內通常不存在礦化³⁸。對比增強CT有助於描繪腫瘤邊緣、評估血管分佈，並識別壞死或空洞區域(如果存在)，儘管SCL與其他淋巴瘤或炎性疾病的特定增強模式並非總是清晰可辨。2023年的一項研究提到，CT可以根據獨特的生長和對比增強模式協助區分患有小腸腫塊的犬隻的腫瘤類型(腺癌、淋巴瘤、梭形細胞肉瘤)，但組織學評估對於明確診斷仍然至關重要³⁴。</p>
+
+                                <p class='lang-en'>For feline Gl lymphoma, specific CT features distinguishing SCL from high-grade lymphoma or severe IBD are not extensively detailed in the provided research beyond general characteristics of tumors, such as wall thickening or mass effects. Alimentary lymphoma is the most common form in cats, and CT would primarily serve to define the extent of this involvement.⁴⁵</p>
+                                <p class='lang-zh'>對於貓胃腸道淋巴瘤，除了腫瘤的一般特徵(如腸壁增厚或腫塊效應)外，所提供的研究中並未詳細描述區分 SCL 與高度惡性淋巴瘤或嚴重 IBD的特定CT 特徴。消化道淋巴瘤是貓最常見的形式，CT主要用於確定其受累範圍⁴⁵。</p>
+
+                                <p class='lang-en'>The available literature does not provide highly specific CT features that reliably differentiate small cell variants of Gl lymphoma from other conditions like IBD or other tumor types based solely on CT imaging characteristics. The overall pattern of disease (e.g., diffuse vs. focal, presence and nature of lymphadenopathy, involvement of other organs) contributes to the suspicion, but histopathology with ancillary diagnostics remains paramount.</p>
+                                <p class='lang-zh'>現有文獻並未提供高度特異性的CT特徵，能夠僅憑CT影像學特徵可靠地區分胃腸道淋巴瘤的小細胞變異型與IBD或其他腫瘤類型等其他疾病。疾病的整體模式(例如，瀰漫性 vs.局灶性、淋巴結腫大的存在與性質、其他器官的受累情況)有助於產生懷疑，但組織病理學結合輔助診斷仍然至關重要。</p>
+                            `
+                        },
+                        {
+                            title: "3.3.4. Cytological Evaluation / 細胞學評估",
+                            content: `
+                                <p class='lang-en'>Fine-needle aspiration (FNA) cytology of affected intestinal segments (if accessible, e.g., a distinct mass or significantly thickened region) or, more commonly, enlarged mesenteric lymph nodes, can be a relatively non-invasive method to obtain samples for evaluation. Cytology can readily diagnose high-grade (large cell) lymphoma if a monomorphic population of large, atypical lymphocytes is identified.¹⁸</p>
+                                <p class='lang-zh'>對受影響的腸段(如果可及，例如明顯的腫塊或顯著增厚的區域)或更常見的腫大腸繫膜淋巴結進行細針抽吸(FNA)細胞學檢查，可以是一種相對非侵入性的樣本獲取方法。如果鑑定出單形性的大型非典型淋巴細胞群，細胞學可以輕易診斷出高度惡性(大細胞)淋巴瘤¹⁸。</p>
+                                
+                                <p class='lang-en'>However, the cytological diagnosis of SCL presents a significant challenge. The neoplastic cells in SCL are, by definition, small to intermediate in size and may lack overt cytological criteria of malignancy (e.g., prominent nucleoli, high mitotic rate, marked pleomorphism). Consequently, a sample containing predominantly small lymphocytes can be difficult to distinguish from reactive lymphoid hyperplasia (as seen with inflammation/IBD) or even normal lymphoid tissue, especially from lymph node aspirates. For instance, FNA of enlarged mesenteric lymph nodes in cats ultimately diagnosed with SCL may misleadingly show only reactive hyperplasia.¹⁰ Immunocytochemistry (ICC) performed on cytology smears can sometimes aid in immunophenotyping the lymphocyte population (T-cell versus B-cell), which can be helpful if a monotypic population is suspected, but it does not definitively confirm neoplasia without other supporting features.⁵⁷ Therefore, while cytology is a useful screening tool and can be diagnostic for some forms of lymphoma, it is often inconclusive for SCL, necessitating histopathology and ancillary tests for a definitive diagnosis.</p>
+                                <p class='lang-zh'>然而，SCL 的細胞學診斷面臨重大挑戰。根據定義，SCL中的腫瘤細胞大小為小至中等，可能缺乏明顯的惡性細胞學標準(例如，明顯的核仁、高有絲分裂率、顯著的多形性)。因此，主要由小淋巴細胞組成的樣本很難與反應性淋巴樣增生(如炎症/IBD中所見)甚至正常的淋巴樣組織區分開來，尤其是在淋巴結抽吸物中。例如，最終診斷為SCL 的貓的腫大腸繋膜淋巴結 FNA可能僅誤導性地顯示反應性增生¹⁰。對細胞學塗片進行的免疫細胞化學(ICC)有時有助於對淋巴細胞群進行免疫表型分型(T細胞與B細胞)，如果懷疑存在單型性細胞群，這可能有所幫助，但在沒有其他支持性特徵的情況下，它不能明確確認腫瘤⁵⁷。因此，雖然細胞學是一種有用的篩檢工具，並且可以診斷某些形式的淋巴瘤，但對於SCL而言，它通常是不確定的，需要組織病理學和輔助檢測才能明確診斷。</p>
+                            `
+                        },
+                        {
+                            title: "3.3.5. Histopathological Diagnosis / 組織病理學診斷",
+                            content: `
+                                <p class='lang-en'>Histopathological examination of intestinal biopsies (obtained either endoscopically or via full-thickness surgical collection) is the gold standard for the definitive diagnosis of SCL and for its crucial differentiation from IBD.⁸</p>
+                                <p class='lang-zh'>腸道活檢(經內視鏡或全層手術採集)的組織病理學檢查是明確診斷 SCL 及其與IBD 關鍵區別的金標準⁸。</p>
+                                
+                                <p class='lang-en'>Characteristic histopathological features of SCL include:</p>
+                                <p class='lang-zh'>SCL 的特徵性組織病理學特徵包括：</p>
+                                <ul class='list-disc pl-5 lang-en'>
+                                    <li>Lymphocytic Infiltrate: Infiltration of the intestinal mucosa (and sometimes submucosa or deeper layers in full-thickness samples) by a relatively monomorphic population of small to intermediate-sized neoplastic lymphocytes. These cells typically have scant cytoplasm, round to slightly irregular nuclei with condensed or stippled chromatin, and inconspicuous nucleoli. While they are neoplastic, their cytological atypia can be subtle.</li>
+                                    <li>Epitheliotropism: A key feature, particularly for feline SCL (often classified as enteropathy-associated T-cell lymphoma type II, EATL type II), is the infiltration of neoplastic lymphocytes into the intestinal epithelial lining of the villi and crypts. This can appear as individual lymphocytes scattered among enterocytes, or as nests or plaques of lymphocytes within the epithelium.</li>
+                                    <li>Architectural Disruption: While sometimes subtle in early or low-grade SCL, the neoplastic infiltrate often disrupts the normal mucosal architecture. This may include villous blunting or fusion, crypt distortion, and an increased density of lymphocytes in the lamina propria that effaces normal structures. Infiltration of the tunica muscularis may be evident in full-thickness samples.¹⁷</li>
+                                    <li>Differentiation from High-Grade Lymphoma: Histological assessment of cellular size (small vs. large), mitotic index (number of mitotic figures per high-power field), and potentially proliferation markers like Ki-67 staining are used to differentiate low-grade SCL from high-grade (large cell) Gl lymphoma. High-grade lymphomas are characterized by larger, more pleomorphic lymphocytes with more frequent mitoses.³⁴</li>
+                                </ul>
+                                <ul class='list-disc pl-5 lang-zh'>
+                                    <li>淋巴細胞浸潤：小至中等大小的相對單形性腫瘤性淋巴細胞浸潤腸黏膜(有時在全層樣本中浸潤黏膜下層或更深層)。這些細胞通常細胞質稀少，細胞核呈圓形至略不規則，染色質濃縮或點彩狀，核仁不顯著。雖然它們是腫瘤性的，但其細胞學非典型性可能很細微。</li>
+                                    <li>上皮趨向性：一個關鍵特徵，特別是對於貓SCL(通常歸類為第二型腸病相關T細胞淋巴瘤，EATL type II)，是腫瘤性淋巴細胞浸潤絨毛和腺窩的腸上皮襯裡。這可能表現為散佈在腸上皮細胞之間的個別淋巴細胞，或上皮內的淋巴細胞巢或斑塊。</li>
+                                    <li>結構破壞：雖然在早期或低度惡性 SCL 中有時很細微，但腫瘤性浸潤通常會破壞正常的黏膜結構。這可能包括絨毛變鈍或融合、腺窩扭曲，以及固有層中淋巴細胞密度增加，從而抹去正常結構。在全層樣本中可能明顯見到固有肌層的浸潤¹⁷。</li>
+                                    <li>與高度惡性淋巴瘤的區分：透過組織學評估細胞大小(小細胞vs. 大細胞)、有絲分裂指數(每高倍視野的有絲分裂像數目)以及潛在的增殖標記物(如Ki-67染色)，可區分低度惡性 SCL 與高度惡性(大細胞)胃腸道淋巴瘤。高度惡性淋巴瘤的特徵是較大、更具多形性的淋巴細胞以及更頻繁的有絲分裂³⁴。</li>
+                                </ul>
+                                <p class='lang-en'>Despite being the gold standard, histopathology alone can still be challenging in differentiating severe, lymphocyte-rich IBD from SCL, especially when relying on small or superficial endoscopic biopsies. This is where ancillary diagnostic techniques become indispensable.</p>
+                                <p class='lang-zh'>儘管是金標準，單獨的組織病理學在區分嚴重、富含淋巴細胞的IBD 與SCL時仍可能具有挑戰性，尤其是在依賴小型或淺層內視鏡活檢時。這正是輔助診斷技術變得不可或缺之處。</p>
+                            `
+                        },
+                        {
+                            title: "3.3.6. Advanced Diagnostic Modalities for SCL / SCL的進階診斷模式",
+                            content: `
+                                <p class='lang-en'>Given the challenges in differentiating SCL from severe IBD based on routine histopathology alone, particularly with endoscopic biopsies, advanced diagnostic techniques are frequently essential for achieving a definitive diagnosis. The combination of histopathology, immunohistochemistry (IHC), and PCR for Antigen Receptor Rearrangements (PARR) forms a powerful diagnostic triad.</p>
+                                <p class='lang-zh'>鑑於僅憑常規組織病理學難以區分SCL 與嚴重IBD，尤其是在內視鏡活檢的情況下，進階診斷技術對於達成明確診斷往往至關重要。組織病理學、免疫組織化學(IHC)和抗原受體重組聚合酶鏈式反應(PARR)的組合構成了一個強大的診斷三元組。</p>
+                            `
+                        },
+                        {
+                            title: "3.3.6.1. Immunohistochemistry (IHC) / 免疫組織化學(IHC)",
+                            content: `
+                                <p class='lang-en'>IHC involves using specific antibodies to detect proteins (antigens) expressed by cells within a tissue section. In the context of SCL, IHC is crucial for:</p>
+                                <p class='lang-zh'>IHC 在SCL的背景下至關重要，用於：</p>
+                                <ul class='list-disc pl-5 lang-en'>
+                                    <li>Immunophenotyping: Determining the lineage of the infiltrating lymphocytes (T-cell or B-cell). Common markers include CD3 for T-cells and CD20 or CD79a for B-cells. Feline SCL is predominantly of T-cell origin (CD3-positive). Similarly, a study on canine small cell intestinal lymphoma found all cases to be T-cell (CD3-positive).⁵⁰ A monomorphic infiltrate strongly expressing one lineage marker (e.g., sheets of CD3+ small lymphocytes) is highly suggestive of lymphoma, whereas a mixed population of T and B cells is more consistent with inflammation.</li>
+                                    <li>Assessing Proliferation: The Ki-67 antibody detects a nuclear protein associated with cell proliferation. A high Ki-67 index (percentage of positive cells) indicates a high proliferation rate and is more characteristic of high-grade lymphomas, but it can also help differentiate some low-grade lymphomas from benign inflammatory infiltrates, which typically have lower proliferation rates.²⁰ For example, EATL type 1 (large cell) lymphoma in dogs has a significantly higher Ki-67 index than EATL type 2 (small cell) or IBD.²⁰</li>
+                                    <li>Visualizing Infiltrative Patterns: IHC can help highlight the distribution of lymphocytes, such as demonstrating epitheliotropism more clearly than routine stains.</li>
+                                </ul>
+                                <ul class='list-disc pl-5 lang-zh'>
+                                    <li>免疫表型分型：確定浸潤淋巴細胞的譜系(T細胞或B細胞)。常用標記物包括T細胞的CD3和B細胞的CD20或CD79a。貓SCL 主要為T細胞來源(CD3陽性)。同樣，一項關於犬小細胞腸道淋巴瘤的研究發現所有病例均為T細胞(CD3陽性)⁵⁰。強烈表達單一譜系標記物(例如，成片的CD3+小淋巴細胞)的單形性浸潤高度提示淋巴瘤，而T細胞和B細胞混合群體則更符合炎症。</li>
+                                    <li>評估增殖：Ki-67 抗體檢測與細胞增殖相關的核蛋白。高Ki-67指數(陽性細胞百分比)表示高增殖率，更具高度惡性淋巴瘤的特徵，但它也有助於區分某些低度惡性淋巴瘤與良性炎性浸潤，後者通常增殖率較低²⁰。例如，犬隻的EATL第1型(大細胞)淋巴瘤的Ki-67 指數顯著高於EATL第2型(小細胞)或IBD²⁰。</li>
+                                    <li>視覺化浸潤模式：IHC有助於突顯淋巴細胞的分佈，例如比常規染色更清晰地顯示上皮趨向性。</li>
+                                </ul>
+                            `
+                        },
+                        {
+                            title: "3.3.6.2. PCR for Antigen Receptor Rearrangement (PARR) / 抗原受體重組聚合酶鏈式反應(PARR)",
+                            content: `
+                                <p class='lang-en'>PARR is a molecular technique used to determine the clonality of a lymphocyte population. During lymphocyte development, the genes encoding T-cell receptors (TCR) and B-cell receptors (immunoglobulins) undergo a unique rearrangement process. In a reactive inflammatory process, many different lymphocytes are recruited, each with a unique antigen receptor gene rearrangement, resulting in a polyclonal (diverse) PARR result. In contrast, lymphoma arises from the clonal expansion of a single neoplastic lymphocyte; thus, all neoplastic cells will share the identical antigen receptor gene rearrangement, resulting in a monoclonal PARR result.</p>
+                                <p class='lang-zh'>PARR 是一種分子技術，用於確定淋巴細胞群的克隆性。在淋巴細胞發育過程中，編碼T細胞受體(TCR)和B細胞受體(免疫球蛋白)的基因會經歷獨特的重組過程。在反應性炎症過程中，會招募許多不同的淋巴細胞，每個淋巴細胞都具有獨特的抗原受體基因重組，從而導致多克隆(多樣化)的PARR結果。相反，淋巴瘤源於單個腫瘤性淋巴細胞的克隆性擴增；因此，所有腫瘤細胞都將共享相同的抗原受體基因重組，從而導致單克隆的PARR結果。</p>
+                                
+                                <p class='lang-en'>PARR is particularly valuable in differentiating SCL from IBD when histomorphology and even IHC are equivocal, especially with small endoscopic biopsies where architectural features are limited. A monoclonal result strongly supports a diagnosis of lymphoma. However, PARR results must always be interpreted in conjunction with histomorphological findings and IHC, as false positives (pseudoclonality) or false negatives can occur. The sensitivity of PARR can be variable (reported around 70-90%) and may be affected by the tissue sampled (e.g., intestinal samples are often more sensitive than mesenteric lymph node samples in cats for diagnosing Gl lymphoma) and the quality of DNA extracted from formalin-fixed, paraffin-embedded tissues.⁵⁷ For suspected Gl lymphoma in cats, PARR on intestinal aspirates or biopsies is recommended, with the understanding that intestinal samples may be more sensitive than lymph node samples.⁶²</p>
+                                <p class='lang-zh'>當組織形態學甚至IHC結果模棱兩可時，PARR 在區分 SCL 與IBD 方面尤其有價值，尤其是在結構特徵有限的小型內視鏡活檢中。單克隆結果強烈支持淋巴瘤的診斷。然而，PARR 結果必須始終結合組織形態學發現和 IHC進行判讀，因為可能會出現假陽性(假克隆性)或假陰性。PARR的靈敏度可能有所不同(據報導約為70-90%)，並且可能受到取樣組織的影響(例如，在貓中診斷胃腸道淋巴瘤時，腸道樣本通常比腸繋膜淋巴結樣本更敏感)以及從福馬林固定、石蠟包埋組織中提取的DNA品質的影響⁵⁷。對於疑似貓胃腸道淋巴瘤，建議對腸道抽吸物或活檢組織進行 PARR，並理解腸道樣本可能比淋巴結樣本更敏感⁶²。</p>
+
+                                <p class='lang-en'>Flow cytometry, which assesses cell surface markers on live cells in suspension, can also be used for immunophenotyping and may suggest clonality. It is often considered superior to PARR for immunophenotyping if fresh tissue or aspirates are available, particularly in dogs [57].</p>
+                                <p class='lang-zh'>流式細胞術評估懸浮活細胞上的細胞表面標記，也可用於免疫表型分型並可能提示克隆性。如果可以獲得新鮮組織或抽吸物，特別是在犬隻中，它通常被認為在免疫表型分型方面優於PARR [57]。</p>
+                            `
+                        }
+                    ]
+                },
+                {
+                    id: "citedWorks",
+                    buttonText: "Cited Works / 引用的著作",
+                    title: "Cited Works / 引用的著作",
+                    references: [
+                        "Chronic Enteropathy in Dogs | Purina Institute, Retrieved: May 25, 2025, https://www.purinainstitute.com/centresquare/therapeutic-nutrition/chronic-enteropathy-in-dogs",
+                        "Feline Chronic Enteropathy | Purina Institute, Retrieved: May 25, 2025, https://www.purinainstitute.com/centresquare/therapeutic-nutrition/feline-chronic-enteropathy",
+                        "Inflammatory Bowel Disease (IBD) in Dogs and Cats, Retrieved: May 25, 2025, https://todaysveterinarypractice.com/gastroenterology/inflammatory-bowel-disease-dogs-cats/",
+                        "(PDF) Inflammatory bowel disease in veterinary medicine - ResearchGate, Retrieved: May 25, 2025, https://www.researchgate.net/publication/51895409_Inflammatory_bowel_disease_in_veterinary_medicine",
+                        "wendyblount.com, Retrieved: May 25, 2025, https://wendyblount.com/articles/digestive/2Article-ACVIM-GIBiopsies.pdf",
+                        "Small Intestinal Disease on Ultrasound. MSPCA-Angell, Retrieved: May 25, 2025, https://www.mspca.org/angell_services/small-intestinal-disease-on-ultrasound/",
+                        "Inflammatory Bowel Disease | Cornell University College of Veterinary Medicine, Retrieved: May 25, 2025, https://www.vet.cornell.edu/departments-centers-and-institutes/cornell-feline-health-center/health-information/feline-health-topics/inflammatory-bowel-disease",
+                        "Lymphoma | Cornell University College of Veterinary Medicine, Retrieved: May 25, 2025, https://www.vet.cornell.edu/departments/cornell-feline-health-center/health-information/feline-health-topics/lymphoma",
+                        "Lymphoma in Cats | Small Door Veterinary, Retrieved: May 25, 2025, https://www.smalldoorvet.com/learning-center/medical/lymphoma-in-cats/",
+                        "veterinari.purina.it, Retrieved: May 25, 2025, https://veterinari.purina.it/sites/default/files/vet_materials/3_gi_lymphoma_idb_cats.pdf",
+                        "Feline small cell lymphosarcoma versus Inflammatory bowel.... Retrieved: May 25, 2025, https://www.researchgate.net/publication/236912490_Feline_small_cell_lymphosarcoma_versus_Inflammatory_bowel_disease_Diagnostic_challenges",
+                        "Inflammatory Bowel Disease in the Dog and Cat - WSAVA2002-VIN, Retrieved: May 25, 2025, https://www.vin.com/apputil/content/defaultadv1.aspx?id=3846197&pid=11290&catid=29494", 
+                        "Inflammatory Bowel Disease in Cats | VCA Animal Hospitals, Retrieved: May 25, 2025, https://vcahospitals.com/know-your-pet/inflammatory-bowel-disease-in-cats",
+                        "Inflammatory Bowel Disease in Dogs and Cats - Veterinary Partner - VIN, Retrieved: May 25, 2025, https://veterinarypartner.vin.com/default.aspx?pid=19239&id=4951480", 
+                        "Inflammatory bowel disease in veterinary medicine - IMR Press, Retrieved: May 25, 2025, https://article.imrpress.com/bri/Elite/articles/pdf/Elite470.pdf",
+                        "IS IT FELINE INFLAMMATORY BOWEL DISEASE OR SMALL CELL..., Retrieved: May 25, 2025, https://www.cabidigitallibrary.org/doi/pdf/10.5555/20230113367",
+                        "Differentiating Feline Intestinal Lymphoma from Inflammatory Bowel.... Retrieved: May 25, 2025, https://cvm.msu.edu/vdl/laboratory-sections/anatomic-surgical-pathology/biopsy-service/differentiating-feline-intestinal-lymphoma-from-inflammatory-bowel-disease-ibd",
+                        "Color Atlas: Feline Gastrointestinal Tumors MSPCA-Angell, Retrieved: May 25, 2025, https://www.mspca.org/angell_services/color-atlas-feline-gastrointestinal-tumors/",
+                        "Does Inflammation Trigger Cancer in Cats? - WSAVA2007-VIN, Retrieved: May 25, 2025, https://www.vin.com/apputil/content/defaultadv1.aspx?id=3860864&pid=11242", 
+                        "(PDF) Distinguishing Intestinal Lymphoma From Inflammatory Bowel.... Retrieved: May 25, 2025, https://www.researchgate.net/publication/269413649_Distinguishing_Intestinal_Lymphoma_From_Inflammatory_Bowel_Disease_in_Canine_Duodenal_Endoscopic_Biopsy_Samples",
+                        "Feline inflammatory bowel disease (Proceedings) - DVM360, Retrieved: May 25, 2025, https://www.dvm360.com/view/feline-inflammatory-bowel-disease-proceedings",
+                        "Inflammatory bowel disease (IBD) | Cornell University College of .... Retrieved: May 25, 2025, https://www.vet.cornell.edu/departments-centers-and-institutes/riney-canine-health-center/canine-health-information/inflammatory-bowel-disease-ibd",
+                        "Standardization--Inflammatory Bowel Disease - WSAVA2009-VIN, Retrieved: May 25, 2025, https://www.vin.com/apputil/content/defaultadv1.aspx?id=4352137&pid=11290&print=1", 
+                        "Inflammatory Bowel Disease--More Than a Garbage Can Diagnosis - WSAVA2007 -VIN, Retrieved: May 25, 2025, https://www.vin.com/apputil/content/defaultadv1.aspx?pid=11242&catId=31928&id=3860864",
+                        "vetfolio.s3.amazonaws.com, Retrieved: May 25, 2025, https://vetfolio.s3.amazonaws.com/8c/69/d5908053416381fc8ee0bc97aa79/inflammatory-bowel-disease-ibd-in-the-canine-and-feline-patient-pdf.pdf",
+                        "Inflammatory Bowel Disease (IBD) in Dogs and Cats - MedVet, Retrieved: May 25, 2025, https://www.medvet.com/inflammatory-bowel-disease-ibd-dogs-cats/",
+                        "(PDF) Ultrasound, Hematological and Biochemical Analysis in..., Retrieved: May 25, 2025, https://www.researchgate.net/publication/357697369_Ultrasound_Hematological_and_Biochemical_Analysis_in_Canine_with_Inflammatory_Bowel_Disease",
+                        "Serum Cobalamin (Vitamin B12) and Folate - Gastrointestinal.... Retrieved: May 25, 2025, https://vetmed.tamu.edu/gilab/service/assays/b12folate/",
+                        "Common Diagnostics - Orrville Veterinary Clinic, Retrieved: May 25, 2025, https://www.orrvillevetclinic.com/common-diagnostics",
+                        "Small Bowel - OUCI, Retrieved: May 25, 2025, https://ouci.dntb.gov.ua/en/works/4000B3k3/",
+                        "Feline abdominal ultrasonography: What's normal? What's abnormal? The diseased gastrointestinal tract - PMC - PubMed Central, Retrieved: May 25, 2025, https://pmc.ncbi.nlm.nih.gov/articles/PMC10814209/",
+                        "CT of Bowel Wall Thickening Significance and Pitfalls of Interpretation | AJR, Retrieved: May 25, 2025, https://www.ajronline.org/doi/10.2214/ajr.176.5.1761105",
+                        "IMPROVING CONSPICUITY OF THE CANINE GASTROINTESTINAL WALL USING DUAL PHASE CONTRAST-ENHANCED COMPUTED TOMOGRAPHY: A RETROSPECTIVE CROSS-SECTIONAL STUDY - ResearchGate, Retrieved: May 25, 2025, https://www.researchgate.net/publication/312108045_IMPROVING_CONSPICUITY_OF_THE_CANINE_GASTROINTESTINAL_WALL_USING_DUAL_PHASE_CONTRAST-ENHANCED_COMPUTED_TOMOGRAPHY_A_RETROSPECTIVE_CROSS-SECTIONAL_STUDY_Optimal_Gl_Mucosal_Surface_Enhancement_Using_CT",
+                        "Gastrointestinal Neoplasia in Dogs and Cats - Digestive System.... Retrieved: May 25, 2025, https://www.merckvetmanual.com/digestive-system/neoplasia-of-the-gastrointestinal-tract-in-small-animals/gastrointestinal-neoplasia-in-dogs-and-cats",
+                        "CT of Bowel Wall Thickening Significance and Pitfalls of .... Retrieved: May 25, 2025, https://www.ajronline.org/doi/full/10.2214/ajr.176.5.1761105",
+                        "Computed Tomographic Findings of Eosinophilic Enteritis in Eight..., Retrieved: May 25, 2025, https://pmc.ncbi.nlm.nih.gov/articles/PMC12032532/",
+                        "(PDF) Computed Tomographic Findings of Eosinophilic Enteritis in.... Retrieved: May 25, 2025, https://www.researchgate.net/publication/391195697_Computed_Tomographic_Findings_of_Eosinophilic_Enteritis_in_Eight_Cats_Case_Series",
+                        "CT features of gastrointestinal spindle cell, epithelial, and round cell ..., Retrieved: May 25, 2025, https://www.researchgate.net/publication/365429634_CT_features_of_gastrointestinal_spindle_cell_epithelial_and_round_cell_tumors_in_41_dogs",
+                        "All lesions great and small, part 2. Diagnostic cytology in veterinary.... Retrieved: May 25, 2025, https://pmc.ncbi.nlm.nih.gov/articles/PMC7163500/",
+                        "(PDF) Design of a Simplified Histopathologic Model for.... Retrieved: May 25, 2025, https://www.researchgate.net/publication/258954725_Design_of_a_Simplified_Histopathologic_Model_for_Gastrointestinal_Inflammation_in_Dogs",
+                        "(PDF) Histopathological Standards for the Diagnosis of .... Retrieved: May 25, 2025, https://www.researchgate.net/publication/5515150_Histopathological_Standards_for_the_Diagnosis_of_Gastrointestinal_Inflammation_in_Endoscopic_Biopsy_Samples_from_the_Dog_and_Cat_A_Report_from_the_World_Small_Animal_Veterinary_Association_Gastrointestinal_Standardization_Group",
+                        "Report From: WSAVA Gastrointestinal Standardization Group - WSAVA2005 - VIN, Retrieved: May 25, 2025, https://www.vin.com/doc/?id=3854165&pid=11196",
+                        "Common Types of Cancer in Cats - UW Veterinary Care, Retrieved: May 25, 2025, https://uwveterinarycare.wisc.edu/common-types-of-cancer-in-cats/",
+                        "Radiation Therapy for Feline Gastrointestinal Lymphoma | Today's.... Retrieved: May 25, 2025, https://todaysveterinarynurse.com/oncology/a-novel-treatment-for-feline-gastrointestinal-lymphoma-radiation-therapy/",
+                        "Theoretical and Applied Veterinary Medicine, Retrieved: May 25, 2025, https://dspace.dsau.dp.ua/bitstream/123456789/10035/1/%D0%A1%D1%83%D0%BF%D1%80%D1%83%D0%BD%D0%B5%D0%BD%D0%BA%D0%BE%2C%20%D0%91%D1%96%D0%BB%D0%B8%D0%B9.pdf",
+                        "Alimentary lymphoma in cats: 28 cases (1988-1993) in: Journal of..., Retrieved: May 25, 2025, https://avmajournals.avma.org/view/journals/javma/207/12/javma.1995.207.12.1593.xml",
+                        "Clinical characterisation and long-term survival of paediatric and juvenile lymphoma in cats - RVC Repository, Retrieved: May 25, 2025, https://rvc-repository.worktribe.com/OutputFile/1697015",
+                        "UNIVERSIDADE FEDERAL DO RIO GRANDE DO SUL FACULDADE DE VETERINÁRIA PROGRAMA DE PÓS-GRADUAÇÃO EM CIÊNCIAS VETERINÁRIAS ASPE - Lume UFRGS, Retrieved: May 25, 2025, https://lume.ufrgs.br/bitstream/handle/10183/238620/001069951.pdf", 
+                        "Serum TK1 activity and SAA concentration as biomarkers to differentiate lymphoma from gastrointestinal disease in cats - Epsilon Archive for Student Projects, Retrieved: May 25, 2025, https://stud.epsilon.slu.se/18694/1/friman_a_230202.pdf",
+                        "Clinical characteristics and outcome in dogs with small cell T-cell intestinal lymphoma - PMC, Retrieved: May 25, 2025, https://pmc.ncbi.nlm.nih.gov/articles/PMC6041184/",
+                        "Lymphoma in Dogs - Circulatory System - Merck Veterinary Manual, Retrieved: May 25, 2025, https://www.merckvetmanual.com/circulatory-system/lymphoma-in-dogs/lymphoma-in-dogs",
+                        "Lymphoma in Dogs - Circulatory System - MSD Veterinary Manual, Retrieved: May 25, 2025, https://www.msdvetmanual.com/circulatory-system/lymphoma-in-dogs/lymphoma-in-dogs", 
+                        "Canine Multicentric Lymphoma: Diagnostic, Treatment, and Prognostic Insights - MDPI, Retrieved: May 25, 2025, https://www.mdpi.com/2076-2615/15/3/391", 
+                        "avmajournals.avma.org, Retrieved: May 25, 2025, https://avmajournals.avma.org/downloadpdf/journals/javma/252/4/javma.252.4.440.pdf",
+                        "Clinical, laboratory and ultrasonographic findings differentiating low-grade intestinal T-cell lymphoma from lymphoplasmacytic enteritis in cats, Retrieved: May 25, 2025, https://pmc.ncbi.nlm.nih.gov/articles/PMC8692195/",
+                        "Central nervous system lymphoma in dogs - Ghent University Library, Retrieved: May 25, 2025, https://libstore.ugent.be/fulltxt/RUG01/003/203/862/RUG01-003203862_2024_0001_AC.pdf",
+                        "Update on Malignant Lymphoma in Dogs - WSAVA 2018 Congress.... Retrieved: May 25, 2025, https://www.vin.com/Members/CMS/Project/DefaultAdv1.aspx?pid=22915&meta=VIN&catId=124650&id=8896605",
+                        "PCR for Antigen Receptor Rearrangements (PARR) - MSU College of Veterinary Medicine, Retrieved: May 25, 2025, https://cvm.msu.edu/vdl/laboratory-sections/anatomic-surgical-pathology/biopsy-service/pcr-for-antigen-receptor-rearrangements-parr",
+                        "Detection of Lymphoid Markers (CD3 and PAX5) for Immunophenotyping in Dogs and Cats: Comparison of Stained Cytology Slides and Matched Cell Blocks, Retrieved: May 25, 2025, https://pmc.ncbi.nlm.nih.gov/articles/PMC9963973/",
+                        "Feline Epitheliotropic Intestinal Malignant Lymphoma: 10 Cases (1997-2000) | Request PDF, Retrieved: May 25, 2025, https://www.researchgate.net/publication/10735815_Feline_Epitheliotropic_Intestinal_Malignant_Lymphoma_10_Cases_1997-2000",
+                        "Gastrointestinal B-lymphoblastic lymphoma in a dog: A case report - ResearchGate, Retrieved: May 25, 2025, https://www.researchgate.net/publication/322643433_Gastrointestinal_B-lymphoblastic_lymphoma_in_a_dog_A_case_report",
+                        "Choose a test - Clinical Hematopathology Laboratory, Retrieved: May 25, 2025, https://vetmedbiosci.colostate.edu/chl/choose-a-test/",
+                        "Prognostic Value of Lymphocyte-to-Monocyte Ratio in Canine High-Grade Lymphoma Cases. World Vet. J. 9(3), Retrieved: May 25, 2025, https://wvj.science-line.com/attachments/article/58/WVJ%209(3)%20218-229,%20Sept%2025,%202019.pdf",
+                        "Subclinical gastrointestinal mucosal lesions occur in dogs with intrahepatic portosystemic shunts independent of percutaneous transvenous coil embolization - AVMA Journals, Retrieved: May 25, 2025, https://avmajournals.avma.org/downloadpdf/view/journals/javma/aop/javma.24.11.0707/javma.24.11.0707.pdf"
+                    ],
+                     subsections: [ { title: "", content: "" } ]
+                }
+            ]
+        };
+        
+        documentContent.sections.forEach(section => {
+            if (section.id !== 'citedWorks') { 
+                section.subsections.forEach(subsection => {
+                    subsection.content = processCitationsInText(subsection.content);
+                });
+            }
+        });
+
+        const mainTitleElement = document.getElementById('mainTitle');
+        const navigationButtonsContainer = document.getElementById('navigationButtons');
+        const contentArea = document.getElementById('contentArea');
+        let currentActiveButton = null;
+
+        // Modal elements
+        const modalOverlay = document.getElementById('referenceModalOverlay');
+        const modalContentElement = document.getElementById('referenceModalContent');
+        const modalCloseButton = document.getElementById('referenceModalCloseButton');
+
+        function cacheReferences() {
+            const citedWorksSectionData = documentContent.sections.find(s => s.id === 'citedWorks');
+            if (citedWorksSectionData && citedWorksSectionData.references) {
+                citedWorksSectionData.references.forEach((refText, index) => {
+                    const refId = index + 1;
+                    const urlMatch = refText.match(/https?:\/\/[^\s,]+/);
+                    let displayRefText = refText;
+                    if (urlMatch) {
+                        const url = urlMatch[0];
+                        displayRefText = refText.replace(url, `<a href="${url}" target="_blank" rel="noopener noreferrer" class="hover:underline">${url}</a>`);
+                    }
+                    referencesData[refId] = displayRefText;
+                });
+            }
+        }
+        
+        function showReferenceModal(refId) {
+            const referenceHTML = referencesData[refId];
+            if (referenceHTML) {
+                modalContentElement.innerHTML = referenceHTML;
+                modalOverlay.classList.remove('hidden');
+            } else {
+                modalContentElement.innerHTML = '找不到參考文獻。Reference not found.';
+                modalOverlay.classList.remove('hidden');
+            }
+        }
+
+        function hideReferenceModal() {
+            modalOverlay.classList.add('hidden');
+            modalContentElement.innerHTML = ''; // Clear content
+        }
+        
+        function initializePage() {
+            mainTitleElement.innerHTML = documentContent.title;
+            cacheReferences(); 
+
+            documentContent.sections.forEach((section, index) => {
+                const button = document.createElement('button');
+                button.innerHTML = section.buttonText; 
+                button.classList.add('px-4', 'py-3', 'rounded-lg', 'text-sm', 'font-medium', 'focus:outline-none', 'focus:ring-2', 'focus:ring-offset-2', 'focus:ring-blue-500', 'transition-colors', 'duration-150', 'w-full', 'sm:w-auto', 'shadow-md', 'leading-tight', 'text-center');
+                button.classList.add('inactive-button'); 
+                button.dataset.sectionId = section.id;
+
+                button.addEventListener('click', () => {
+                    loadSectionContent(section.id);
+                    setActiveButton(button);
+                    if (window.innerWidth < 640) { 
+                        contentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                         navigationButtonsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+                navigationButtonsContainer.appendChild(button);
+
+                if (index === 0) {
+                    loadSectionContent(section.id);
+                    setActiveButton(button);
+                }
+            });
+
+            // Modal close listeners
+            if (modalCloseButton) {
+                 modalCloseButton.addEventListener('click', hideReferenceModal);
+            }
+            if (modalOverlay) {
+                modalOverlay.addEventListener('click', function(event) {
+                    // Only close if the overlay itself (not its children) is clicked
+                    if (event.target === modalOverlay) {
+                        hideReferenceModal();
+                    }
+                });
+            }
+        }
+
+        function loadSectionContent(sectionId) {
+            const section = documentContent.sections.find(s => s.id === sectionId);
+            if (!section) {
+                contentArea.innerHTML = '<p class="text-red-500">找不到此章節的內容。<br>Content for this section not found.</p>';
+                return;
+            }
+
+            let htmlContent = `<h2 class="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300">${section.title}</h2>`;
+            
+            if (section.id === 'citedWorks') {
+                htmlContent += "<ol class='cited-works-list lang-en'>";
+                if (section.references) {
+                    section.references.forEach((refText, index) => {
+                        const refId = index + 1;
+                        htmlContent += `<li id='reference-${refId}'>${referencesData[refId] || refText}</li>`;
+                    });
+                }
+                htmlContent += "</ol>";
+                htmlContent += "<p class='lang-zh'>（引用的著作中文翻譯在此處省略，因原文PDF中此部分無中文翻譯）</p>";
+            } else {
+                section.subsections.forEach(subsection => {
+                    if (subsection.title && subsection.title.trim() !== "") {
+                         htmlContent += `<h3 class="text-xl font-semibold mb-3 text-blue-700">${subsection.title}</h3>`;
+                    }
+                    htmlContent += `<div class="mb-8 last:mb-0">${subsection.content}</div>`;
+                });
+            }
+            contentArea.innerHTML = htmlContent;
+        }
+
+        function setActiveButton(buttonToActivate) {
+            if (currentActiveButton) {
+                currentActiveButton.classList.remove('active-button');
+                currentActiveButton.classList.add('inactive-button');
+            }
+            buttonToActivate.classList.remove('inactive-button');
+            buttonToActivate.classList.add('active-button');
+            currentActiveButton = buttonToActivate;
+        }
+
+        // Event delegation for citation clicks on the contentArea
+        contentArea.addEventListener('click', function(event) {
+            const target = event.target.closest('.citation-link');
+            if (target) {
+                event.preventDefault(); 
+                const refId = target.dataset.refId;
+                showReferenceModal(refId);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+
+</body>
+</html>
